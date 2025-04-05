@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Evolv</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="register">Registrarse</string>
+    <string name="welcome">Bienvenido</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+</resources>
