@@ -10,7 +10,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 public class MainActivity extends AppCompatActivity {
     private TextInputEditText etUsername, etPassword;
-    private MaterialButton btnLogin, btnRegister;
+    private MaterialButton btnLogin, btnRegister, btnAnonymous;
     private DatabaseHelper databaseHelper;
 
     @Override
@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
+        btnAnonymous = findViewById(R.id.btnAnonymous);
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
                 if (loggedInUser != null) {
                     Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                     intent.putExtra("username", loggedInUser);
+                    intent.putExtra("isAnonymous", false);
                     startActivity(intent);
                     finish();
                 } else {
@@ -52,6 +54,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, RegisterActivity.class));
+            }
+        });
+
+        btnAnonymous.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                intent.putExtra("username", getString(R.string.anonymous_user));
+                intent.putExtra("isAnonymous", true);
+                startActivity(intent);
+                finish();
             }
         });
     }

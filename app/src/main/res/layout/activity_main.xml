@@ -70,4 +70,15 @@
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:cornerRadius="8dp" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAnonymous"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnRegister"
+        android:layout_marginTop="8dp"
+        android:text="@string/anonymous_login"
+        android:textAllCaps="false"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        app:cornerRadius="8dp" />
+
 </RelativeLayout>

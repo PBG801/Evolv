@@ -10,6 +10,7 @@ import com.google.android.material.button.MaterialButton;
 public class HomeActivity extends AppCompatActivity {
     private TextView tvWelcome;
     private MaterialButton btnLogout;
+    private boolean isAnonymous;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,8 +21,14 @@ public class HomeActivity extends AppCompatActivity {
         btnLogout = findViewById(R.id.btnLogout);
 
         String username = getIntent().getStringExtra("username");
+        isAnonymous = getIntent().getBooleanExtra("isAnonymous", false);
+
         if (username != null && !username.isEmpty()) {
-            tvWelcome.setText(getString(R.string.welcome) + ", " + username + "!");
+            if (isAnonymous) {
+                tvWelcome.setText(username);
+            } else {
+                tvWelcome.setText(getString(R.string.welcome) + ", " + username + "!");
+            }
         }
 
         btnLogout.setOnClickListener(new View.OnClickListener() {
@@ -38,6 +45,10 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // Evitar que el usuario regrese a la pantalla de login usando el botón back
-        moveTaskToBack(true);
+        if (isAnonymous) {
+            super.onBackPressed();
+        } else {
+            moveTaskToBack(true);
+        }
     }
 }
