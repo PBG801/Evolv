@@ -5,7 +5,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.8.0-blue?logo=kotlin)](https://kotlinlang.org/)  
 [![License](https://img.shields.io/badge/License-MIT-orange)](LICENSE)
 
-**Evolv** es una aplicación Android revolucionaria que ofrece **entrenamientos 100% personalizables**, diseñada para resolver las limitaciones de las apps de fitness actuales: falta de adaptación real, experiencia fragmentada y accesibilidad limitada.
+**Evolv** es una aplicación Android que ofrece **entrenamientos 100% personalizables**, diseñada para resolver las limitaciones de las apps de fitness actuales: falta de adaptación real, experiencia fragmentada y accesibilidad limitada.
 
 ---
 
