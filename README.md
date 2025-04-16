@@ -29,7 +29,7 @@
 ---
 
 ## **🛠️ Tecnologías Utilizadas**
-- **Lenguaje**: Kotlin
+- **Lenguaje**: Java
 - **Arquitectura**: MVVM (*ViewModel + LiveData*)
 - **Persistencia**: Room (*SQLite offline*)
 - **Reproducción de vídeos**: ExoPlayer

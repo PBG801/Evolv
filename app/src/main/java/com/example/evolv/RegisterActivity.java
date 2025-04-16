@@ -1,5 +1,6 @@
 package com.example.evolv;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -48,6 +49,13 @@ public class RegisterActivity extends AppCompatActivity {
 
                 if (databaseHelper.insertUser(username, password)) {
                     Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                    
+                    // Iniciar HomeActivity con el nuevo usuario
+                    Intent intent = new Intent(RegisterActivity.this, HomeActivity.class);
+                    intent.putExtra("username", username);
+                    intent.putExtra("isAnonymous", false);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                     finish();
                 } else {
                     Toast.makeText(RegisterActivity.this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
