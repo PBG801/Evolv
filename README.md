@@ -39,7 +39,7 @@
 ---
 
 ## **📊 Modelo de Datos**
-![Diagrama Entidad-Relación](https://via.placeholder.com/600x400?text=Diagrama+E-R+de+Evolv) *(Reemplazar con imagen real)*
+![Diagrama Entidad-Relación](https://via.placeholder.com/600x400?text=Diagrama+E-R+de+Evolv)
 
 ### **Entidades clave**:
 - **USER**: Datos del usuario (peso, género, email).
