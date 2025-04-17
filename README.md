@@ -49,4 +49,4 @@ CREATE TABLE WORKOUT (
     user_id INT NOT NULL,
     start_time TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES USER(user_id)
-);
+)
