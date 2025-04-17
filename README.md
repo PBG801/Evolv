@@ -2,7 +2,6 @@
 # **Evolv - Fitness Personalizado** 🏋️‍♂️
 
 
-
 **Evolv** es una aplicación Android que ofrece **entrenamientos 100% personalizables**, diseñada para resolver las limitaciones de las apps de fitness actuales: falta de adaptación real, experiencia fragmentada y accesibilidad limitada.
 
 ---
