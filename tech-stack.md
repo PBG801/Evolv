@@ -19,8 +19,8 @@
 ### **Seguridad**
 - jBCrypt (0.4) - Para hash de contraseñas
 
-### **Testing**
-- JUnit (4.13.2)
+### **Testing** - Pirámide de pruebas
+- Mockito -(4.5.1): Para pruebas unitarias
 - AndroidX Test (1.1.5)
 - Espresso (3.5.1)
 
@@ -31,4 +31,4 @@
 
 ## **Herramientas de Desarrollo**
 - Android Studio
-- ProGuard para optimización de código
+- ProGuard para optimización y ofuscación del código
