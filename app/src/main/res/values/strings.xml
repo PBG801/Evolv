@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Evolv</string>
-    <string name="username">Nombre de usuario</string>
+    <string name="email">Correo electrónico</string>
     <string name="password">Contraseña</string>
     <string name="login">Iniciar sesión</string>
     <string name="register">Registrarse</string>

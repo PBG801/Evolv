@@ -15,7 +15,7 @@
         android:contentDescription="@string/app_name"/>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/usernameLayout"
+        android:id="@+id/emailLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/logoImage"
@@ -26,7 +26,7 @@
             android:id="@+id/etRegUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/username"
+            android:hint="@string/email"
             android:inputType="text"
             android:maxLines="1" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -35,7 +35,7 @@
         android:id="@+id/passwordLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/usernameLayout"
+        android:layout_below="@id/emailLayout"
         android:layout_marginTop="16dp"
         app:passwordToggleEnabled="true"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">

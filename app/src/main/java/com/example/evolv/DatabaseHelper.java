@@ -5,89 +5,154 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import org.mindrot.jbcrypt.BCrypt;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "evolv.db";
     private static final int DATABASE_VERSION = 1;
-    private static final String TABLE_USERS = "users";
-    private static final String COL_ID = "id";
-    private static final String COL_USERNAME = "username";
+    
+    // Tabla user
+    private static final String TABLE_USERS = "user";
+    private static final String COL_USER_ID = "user_id";
+    private static final String COL_EMAIL = "email";
     private static final String COL_PASSWORD = "password";
+    private static final String COL_WEIGHT = "weight";
+    private static final String COL_BIRTH_DATE = "birth_date";
+    private static final String COL_GENDER = "gender";
+    private static final String COL_CREATED_AT = "created_at";
 
-    private static final String CREATE_TABLE_USERS = 
-        "CREATE TABLE " + TABLE_USERS + "(" +
-        COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-        COL_USERNAME + " TEXT UNIQUE NOT NULL, " +
-        COL_PASSWORD + " TEXT NOT NULL)";
+    private final Context context;
+    private static final String DATABASE_PATH = "/data/data/com.example.evolv/databases/";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
+        createDatabaseIfNotExists();
+    }
+
+    private void createDatabaseIfNotExists() {
+        // La base de datos se creará automáticamente cuando sea necesario
+        getWritableDatabase();
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE_USERS);
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS " + TABLE_USERS + " (" +
+                COL_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_EMAIL + " TEXT UNIQUE NOT NULL, " +
+                COL_PASSWORD + " TEXT NOT NULL, " +
+                COL_WEIGHT + " REAL, " +
+                COL_BIRTH_DATE + " TEXT, " +
+                COL_GENDER + " TEXT, " +
+                COL_CREATED_AT + " TEXT NOT NULL)";
+        
+        db.execSQL(createTableSQL);
+        Log.i("DatabaseHelper", "Database tables created successfully");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        onCreate(db);
+        // No necesitamos hacer nada aquí ya que la base de datos se copia de assets
     }
 
-    public boolean insertUser(String username, String password) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        try {
-            ContentValues values = new ContentValues();
-            values.put(COL_USERNAME, username);
-            values.put(COL_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt()));
-            return db.insert(TABLE_USERS, null, values) != -1;
-        } catch (Exception e) {
-            return false;
-        } finally {
-            db.close();
-        }
-    }
-
-    public String checkLogin(String username, String password) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        try {
-            String[] columns = {COL_USERNAME, COL_PASSWORD};
-            String selection = COL_USERNAME + "=?";
-            String[] selectionArgs = {username};
-            
-            Cursor cursor = db.query(TABLE_USERS, columns, selection, selectionArgs, null, null, null);
+    public void checkTableStructure() {
+        try (SQLiteDatabase db = this.getReadableDatabase();
+             Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type='table' AND name='" + TABLE_USERS + "'", null)) {
             
             if (cursor != null && cursor.moveToFirst()) {
-                String storedHash = cursor.getString(cursor.getColumnIndex(COL_PASSWORD));
-                String storedUsername = cursor.getString(cursor.getColumnIndex(COL_USERNAME));
-                cursor.close();
-                
-                return BCrypt.checkpw(password, storedHash) ? storedUsername : null;
+                int sqlIndex = cursor.getColumnIndex("sql");
+                if (sqlIndex != -1) {
+                    String createTableSQL = cursor.getString(sqlIndex);
+                    Log.d("DatabaseHelper", "Table structure: " + createTableSQL);
+                } else {
+                    Log.w("DatabaseHelper", "Column 'sql' not found in table structure");
+                }
             }
-            return null;
-        } finally {
-            db.close();
+
+            // Verificar las columnas de la tabla
+            try (Cursor columnsCursor = db.rawQuery("PRAGMA table_info(" + TABLE_USERS + ")", null)) {
+                if (columnsCursor != null) {
+                    while (columnsCursor.moveToNext()) {
+                        int nameIndex = columnsCursor.getColumnIndex("name");
+                        int typeIndex = columnsCursor.getColumnIndex("type");
+                        
+                        String columnName = nameIndex != -1 ? columnsCursor.getString(nameIndex) : "Unknown";
+                        String columnType = typeIndex != -1 ? columnsCursor.getString(typeIndex) : "Unknown";
+                        
+                        Log.d("DatabaseHelper", "Column: " + columnName + " Type: " + columnType);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error checking table structure", e);
         }
     }
 
-    public boolean isUsernameAvailable(String username) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        try {
-            String[] columns = {COL_USERNAME};
-            String selection = COL_USERNAME + "=?";
-            String[] selectionArgs = {username};
-            
-            Cursor cursor = db.query(TABLE_USERS, columns, selection, selectionArgs, null, null, null);
-            boolean isAvailable = cursor == null || cursor.getCount() == 0;
-            if (cursor != null) {
-                cursor.close();
-            }
-            return isAvailable;
-        } finally {
-            db.close();
+    public boolean insertUser(String email, String password) {
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
+            ContentValues values = new ContentValues();
+            values.put(COL_EMAIL, email);
+            values.put(COL_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt()));
+            values.put(COL_CREATED_AT, getCurrentTimestamp());
+            return db.insert(TABLE_USERS, null, values) != -1;
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error inserting user", e);
+            return false;
         }
+    }
+
+    public String checkLogin(String email, String password) {
+        try (SQLiteDatabase db = this.getReadableDatabase();
+             Cursor cursor = db.query(TABLE_USERS,
+                     new String[]{COL_EMAIL, COL_PASSWORD},
+                     COL_EMAIL + "=?",
+                     new String[]{email},
+                     null, null, null)) {
+            
+            if (cursor != null && cursor.moveToFirst()) {
+                int passwordIndex = cursor.getColumnIndex(COL_PASSWORD);
+                int emailIndex = cursor.getColumnIndex(COL_EMAIL);
+                
+                if (passwordIndex >= 0 && emailIndex >= 0) {
+                    String storedHash = cursor.getString(passwordIndex);
+                    String storedEmail = cursor.getString(emailIndex);
+                    return BCrypt.checkpw(password, storedHash) ? storedEmail : null;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error checking login", e);
+            return null;
+        }
+    }
+
+    public boolean isEmailAvailable(String email) {
+        try (SQLiteDatabase db = this.getReadableDatabase();
+             Cursor cursor = db.query(TABLE_USERS,
+                     new String[]{COL_EMAIL},
+                     COL_EMAIL + "=?",
+                     new String[]{email},
+                     null, null, null)) {
+            return cursor == null || !cursor.moveToFirst();
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error checking email availability", e);
+            return false;
+        }
+    }
+
+    private String getCurrentTimestamp() {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
+        return sdf.format(new java.util.Date());
     }
 }

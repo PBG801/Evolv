@@ -1,15 +1,21 @@
 # Evolv Tech Stack 🛠️ (2025)
 
 ## **Core Technologies**
-| Categoría | Tecnología |
-|-----------|-------------|
-| **Plataforma** | Android |
-| **Lenguaje Principal** | Java 8 |
-| **Build System** | Gradle (Kotlin DSL) |
-| **Versiones Android** | - Min SDK: 24 (Android 7.0)
+| Categoría || Tecnología |
+|-----------||-------------|
+| **Plataforma** || Android |
+| **Lenguaje Principal** || Java 8 |
+| **Build System** || Gradle (Kotlin DSL) |
+| **Versiones Android** || - Min SDK: 24 (Android 7.0)
  - Target SDK: 34 (Android 14) |
 
-## **Dependencias Principales**
+## **Base de Datos**
+- **Nombre**: `evolv.db`
+- **Motor**: SQLite (nativo)
+- **Versión**: 1.0
+- **Ubicación**:
+    - Código: `com.evolv.app.database.EvolvDBHelper`
+    - Assets: `/app/src/main/assets/databases/evolv_init.sql`
 
 ### **UI & Componentes Android**
 - AndroidX AppCompat (1.6.1)

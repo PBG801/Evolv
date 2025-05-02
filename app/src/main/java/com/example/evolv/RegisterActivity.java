@@ -4,12 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class RegisterActivity extends AppCompatActivity {
-    private TextInputEditText etUsername, etPassword, etConfirmPassword;
+    private TextInputEditText etEmail, etPassword, etConfirmPassword;
     private MaterialButton btnRegister;
     private DatabaseHelper databaseHelper;
 
@@ -20,20 +21,34 @@ public class RegisterActivity extends AppCompatActivity {
 
         databaseHelper = new DatabaseHelper(this);
         
-        etUsername = findViewById(R.id.etRegUsername);
+        etEmail = findViewById(R.id.etRegUsername);
         etPassword = findViewById(R.id.etRegPassword);
         etConfirmPassword = findViewById(R.id.etRegConfirmPassword);
         btnRegister = findViewById(R.id.btnConfirmRegister);
 
+        // Configurar el comportamiento del botón back
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // Volver a MainActivity
+                finish();
+            }
+        });
+
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String username = etUsername.getText().toString().trim();
+                String email = etEmail.getText().toString().trim();
                 String password = etPassword.getText().toString().trim();
                 String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-                if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+                if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                     Toast.makeText(RegisterActivity.this, "Por favor complete todos los campos", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!isValidEmail(email)) {
+                    Toast.makeText(RegisterActivity.this, "Por favor ingrese un email válido", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -42,25 +57,25 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (!databaseHelper.isUsernameAvailable(username)) {
-                    Toast.makeText(RegisterActivity.this, "El nombre de usuario ya está en uso", Toast.LENGTH_SHORT).show();
+                if (!databaseHelper.isEmailAvailable(email)) {
+                    Toast.makeText(RegisterActivity.this, "El email ya está registrado", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                if (databaseHelper.insertUser(username, password)) {
-                    Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                if (databaseHelper.insertUser(email, password)) {
+                    Toast.makeText(RegisterActivity.this, "Registro exitoso. Por favor, inicie sesión.", Toast.LENGTH_SHORT).show();
                     
-                    // Iniciar HomeActivity con el nuevo usuario
-                    Intent intent = new Intent(RegisterActivity.this, HomeActivity.class);
-                    intent.putExtra("username", username);
-                    intent.putExtra("isAnonymous", false);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
+                    // Volver a MainActivity para que el usuario inicie sesión
                     finish();
                 } else {
                     Toast.makeText(RegisterActivity.this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+    }
+
+    public static boolean isValidEmail(String email) {
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.[a-z]+";
+        return email != null && email.matches(emailPattern);
     }
 }

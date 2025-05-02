@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuProvider;
 import androidx.lifecycle.Lifecycle;
@@ -33,6 +34,18 @@ public class HomeActivity extends AppCompatActivity {
         topAppBar = findViewById(R.id.topAppBar);
         
         setSupportActionBar(topAppBar);
+
+        // Configurar el comportamiento del botón back
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isAnonymous) {
+                    finish();
+                } else {
+                    moveTaskToBack(true);
+                }
+            }
+        });
         
         // Configurar el menú
         addMenuProvider(new MenuProvider() {
@@ -55,7 +68,11 @@ public class HomeActivity extends AppCompatActivity {
                 int id = menuItem.getItemId();
                 
                 if (id == R.id.menu_create_account) {
-                    startActivity(new Intent(HomeActivity.this, RegisterActivity.class));
+                    // Si es usuario anónimo y quiere crear cuenta, vamos directamente a registro
+                    Intent intent = new Intent(HomeActivity.this, RegisterActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
                     return true;
                 } else if (id == R.id.menu_home) {
                     // Ya estamos en home, no hacemos nada
@@ -71,28 +88,19 @@ public class HomeActivity extends AppCompatActivity {
             }
         }, this, Lifecycle.State.RESUMED);
 
-        String username = getIntent().getStringExtra("username");
+        String email = getIntent().getStringExtra("email");
         isAnonymous = getIntent().getBooleanExtra("isAnonymous", false);
 
-        if (username != null && !username.isEmpty()) {
+        if (email != null && !email.isEmpty()) {
             if (isAnonymous) {
-                tvWelcome.setText(username);
+                tvWelcome.setText(email);
             } else {
-                tvWelcome.setText(getString(R.string.welcome) + ", " + username + "!");
+                tvWelcome.setText(getString(R.string.welcome) + ", " + email + "!");
             }
         }
 
+        // Botón de logout (usa el mismo método que el menú)
         btnLogout.setOnClickListener(v -> logout());
-    }
-
-    @Override
-    public void onBackPressed() {
-        // Evitar que el usuario regrese a la pantalla de login usando el botón back
-        if (isAnonymous) {
-            super.onBackPressed();
-        } else {
-            moveTaskToBack(true);
-        }
     }
 
     private void logout() {
