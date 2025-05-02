@@ -46,10 +46,3 @@
 - **WORKOUT**: Sesiones de entrenamiento (tipo, calorías, tiempo).
 - **EXERCISE**: Ejercicios predefinidos (vídeos, duración estándar).
 
-```sql
-CREATE TABLE WORKOUT (
-    workout_id INT PRIMARY KEY,
-    user_id INT NOT NULL,
-    start_time TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES USER(user_id)
-);

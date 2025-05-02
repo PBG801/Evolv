@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <!-- Opciones para usuario anónimo -->
+    <item
+        android:id="@+id/menu_create_account"
+        android:title="Crear cuenta"
+        android:visible="true"
+        app:showAsAction="never" />
+
+    <!-- Opciones para usuario autenticado -->
+    <item
+        android:id="@+id/menu_home"
+        android:title="Inicio"
+        android:visible="false"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_calendar"
+        android:title="Calendario"
+        android:visible="false"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_logout"
+        android:title="Cerrar sesión"
+        android:visible="false"
+        app:showAsAction="never" />
+</menu>

@@ -2,8 +2,13 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Evolv" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:popupMenuStyle">@style/PopupMenu.Evolv</item>
+        <item name="popupMenuStyle">@style/PopupMenu.Evolv</item>
     </style>
 
     <style name="Theme.Evolv" parent="Base.Theme.Evolv" />
+
+    <style name="PopupMenu.Evolv" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">#333333</item>
+    </style>
 </resources>
