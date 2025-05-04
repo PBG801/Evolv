@@ -10,12 +10,15 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class MainActivity extends AppCompatActivity {
+    private LanguageManager languageManager;
     private TextInputEditText etEmail, etPassword;
     private MaterialButton btnLogin, btnRegister, btnAnonymous;
     private DatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        languageManager = new LanguageManager(this);
+        languageManager.applyLanguage();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -26,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
         btnAnonymous = findViewById(R.id.btnAnonymous);
+        
+        // Mostrar lista de usuarios en el Logcat
+        databaseHelper.listUsers();
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -34,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
                 String password = etPassword.getText().toString().trim();
 
                 if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Por favor complete todos los campos", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -46,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(MainActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.error_invalid_credentials), Toast.LENGTH_SHORT).show();
                 }
             }
         });

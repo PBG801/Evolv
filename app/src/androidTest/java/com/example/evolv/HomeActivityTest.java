@@ -5,7 +5,6 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.filters.LargeTest;
 
 import org.junit.After;
@@ -19,7 +18,12 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasFlags;
-import static androidx.test.espresso.matcher.ViewMatchers.*;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.endsWith;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -43,20 +47,19 @@ public class HomeActivityTest {
         intent.putExtra("email", "anonymous@user.com");
 
         // Lanzar HomeActivity
-        ActivityScenario.launch(intent);
+        try (ActivityScenario<HomeActivity> scenario = ActivityScenario.launch(intent)) {
+            // Abrir el menú overflow
+            onView(withClassName(endsWith("OverflowMenuButton"))).perform(click());
 
-        // Verificar que el menú "Crear cuenta" está visible
-        onView(withId(R.id.menu_create_account))
-                .check(matches(isDisplayed()));
+            // Hacer clic en "Crear cuenta"
+            onView(withText("Crear cuenta")).perform(click());
 
-        // Hacer clic en "Crear cuenta"
-        onView(withId(R.id.menu_create_account)).perform(click());
-
-        // Verificar que se inicia RegisterActivity y se limpia el stack
-        intended(hasComponent(RegisterActivity.class.getName()));
-        intended(hasFlags(
-            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK
-        ));
+            // Verificar que se inicia RegisterActivity y se limpia el stack
+            intended(allOf(
+                hasComponent(RegisterActivity.class.getName()),
+                hasFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            ));
+        }
     }
 
     @Test
@@ -67,20 +70,20 @@ public class HomeActivityTest {
         intent.putExtra("email", "test@email.com");
 
         // Lanzar HomeActivity
-        ActivityScenario.launch(intent);
+        try (ActivityScenario<HomeActivity> scenario = ActivityScenario.launch(intent)) {
+            // Verificar que el botón de logout está visible
+            onView(withId(R.id.btnLogout))
+                    .check(matches(isDisplayed()));
 
-        // Verificar que el botón de logout está visible
-        onView(withId(R.id.btnLogout))
-                .check(matches(isDisplayed()));
+            // Hacer clic en logout
+            onView(withId(R.id.btnLogout)).perform(click());
 
-        // Hacer clic en logout
-        onView(withId(R.id.btnLogout)).perform(click());
-
-        // Verificar que se inicia MainActivity y se limpia el stack
-        intended(hasComponent(MainActivity.class.getName()));
-        intended(hasFlags(
-            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK
-        ));
+            // Verificar que se inicia MainActivity y se limpia el stack
+            intended(allOf(
+                hasComponent(MainActivity.class.getName()),
+                hasFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            ));
+        }
     }
 
     @Test
@@ -91,19 +94,19 @@ public class HomeActivityTest {
         intent.putExtra("email", "anonymous@user.com");
 
         // Lanzar HomeActivity
-        ActivityScenario.launch(intent);
+        try (ActivityScenario<HomeActivity> scenario = ActivityScenario.launch(intent)) {
+            // Verificar que el botón de logout está visible
+            onView(withId(R.id.btnLogout))
+                    .check(matches(isDisplayed()));
 
-        // Verificar que el botón de logout está visible
-        onView(withId(R.id.btnLogout))
-                .check(matches(isDisplayed()));
+            // Hacer clic en logout
+            onView(withId(R.id.btnLogout)).perform(click());
 
-        // Hacer clic en logout
-        onView(withId(R.id.btnLogout)).perform(click());
-
-        // Verificar que se inicia MainActivity y se limpia el stack
-        intended(hasComponent(MainActivity.class.getName()));
-        intended(hasFlags(
-            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK
-        ));
+            // Verificar que se inicia MainActivity con los flags correctos
+            intended(allOf(
+                hasComponent(MainActivity.class.getName()),
+                hasFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            ));
+        }
     }
 }

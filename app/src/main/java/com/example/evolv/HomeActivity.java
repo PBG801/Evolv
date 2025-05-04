@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.activity.OnBackPressedCallback;
@@ -18,7 +19,8 @@ import androidx.lifecycle.Lifecycle;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {    
+    private LanguageManager languageManager;
     private TextView tvWelcome;
     private MaterialButton btnLogout;
     private MaterialToolbar topAppBar;
@@ -26,6 +28,8 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        languageManager = new LanguageManager(this);
+        languageManager.applyLanguage();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
@@ -78,10 +82,18 @@ public class HomeActivity extends AppCompatActivity {
                     // Ya estamos en home, no hacemos nada
                     return true;
                 } else if (id == R.id.menu_calendar) {
-                    Toast.makeText(HomeActivity.this, "Calendario - Próximamente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(HomeActivity.this, getString(R.string.calendar_coming_soon), Toast.LENGTH_SHORT).show();
                     return true;
                 } else if (id == R.id.menu_logout) {
                     logout();
+                    return true;
+                } else if (id == R.id.menu_language_es) {
+                    languageManager.setLocale("es");
+                    LanguageManager.recreateApp(HomeActivity.this);
+                    return true;
+                } else if (id == R.id.menu_language_en) {
+                    languageManager.setLocale("en");
+                    LanguageManager.recreateApp(HomeActivity.this);
                     return true;
                 }
                 return false;
@@ -95,7 +107,7 @@ public class HomeActivity extends AppCompatActivity {
             if (isAnonymous) {
                 tvWelcome.setText(email);
             } else {
-                tvWelcome.setText(getString(R.string.welcome) + ", " + email + "!");
+                tvWelcome.setText(getString(R.string.welcome_user, email));
             }
         }
 

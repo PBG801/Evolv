@@ -10,12 +10,15 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class RegisterActivity extends AppCompatActivity {
+    private LanguageManager languageManager;
     private TextInputEditText etEmail, etPassword, etConfirmPassword;
     private MaterialButton btnRegister;
     private DatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        languageManager = new LanguageManager(this);
+        languageManager.applyLanguage();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
@@ -43,32 +46,34 @@ public class RegisterActivity extends AppCompatActivity {
                 String confirmPassword = etConfirmPassword.getText().toString().trim();
 
                 if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                    Toast.makeText(RegisterActivity.this, "Por favor complete todos los campos", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (!isValidEmail(email)) {
-                    Toast.makeText(RegisterActivity.this, "Por favor ingrese un email válido", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.error_invalid_email), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (!password.equals(confirmPassword)) {
-                    Toast.makeText(RegisterActivity.this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.error_passwords_not_match), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (!databaseHelper.isEmailAvailable(email)) {
-                    Toast.makeText(RegisterActivity.this, "El email ya está registrado", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.error_email_exists), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (databaseHelper.insertUser(email, password)) {
-                    Toast.makeText(RegisterActivity.this, "Registro exitoso. Por favor, inicie sesión.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.success_register), Toast.LENGTH_SHORT).show();
                     
                     // Volver a MainActivity para que el usuario inicie sesión
-                    finish();
+                    Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                 } else {
-                    Toast.makeText(RegisterActivity.this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.error_register), Toast.LENGTH_SHORT).show();
                 }
             }
         });

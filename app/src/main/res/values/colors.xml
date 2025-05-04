@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Colores base -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Colores primarios -->
+    <color name="purple_primary">#645195</color>
+    <color name="purple_light">#8B7AB0</color>
+    <color name="purple_dark">#4A3A70</color>
+    
+    <!-- Colores secundarios -->
+    <color name="purple_secondary">#7C6BA1</color>
+    <color name="purple_secondary_light">#A494C7</color>
+    <color name="purple_secondary_dark">#5A4B78</color>
+
+    <!-- Colores de superficie -->
+    <color name="surface_light">#FFFFFF</color>
+    <color name="surface_variant">#F5F0FF</color>
+    <color name="surface_dark">#1C1B1F</color>
+
+    <!-- Colores on (para texto y iconos) -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_surface_light">#1C1B1F</color>
+    <color name="on_surface_dark">#E6E1E5</color>
+
+    <!-- Colores de estado -->
+    <color name="error">#B3261E</color>
+    <color name="error_light">#F9DEDC</color>
+    <color name="success">#146C2E</color>
+    <color name="success_light">#E6F4E9</color>
+    
+    <!-- Colores de énfasis -->
+    <color name="scrim">#1F1B24</color>
+    <color name="ripple">#1F645195</color>
 </resources>

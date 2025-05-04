@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Evolv</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="welcome">Welcome</string>
+    <string name="logout">Logout</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="anonymous_login">Login as anonymous</string>
+    <string name="anonymous_user">Anonymous user</string>
+    <string name="calendar">Calendar</string>
+    <!-- Settings menu -->
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="spanish">Spanish</string>
+    <string name="english">English</string>
+    <!-- Error and notification messages -->
+    <string name="error_empty_fields">Please fill in all fields</string>
+    <string name="error_invalid_email">Please enter a valid email</string>
+    <string name="error_passwords_not_match">Passwords do not match</string>
+    <string name="error_email_exists">Email is already registered</string>
+    <string name="success_register">Registration successful. Please login.</string>
+    <string name="error_register">Error registering user</string>
+    <string name="error_invalid_credentials">Invalid username or password</string>
+    <string name="calendar_coming_soon">Calendar - Coming soon</string>
+    <string name="welcome_user">Welcome, %1$s!</string>
+</resources>

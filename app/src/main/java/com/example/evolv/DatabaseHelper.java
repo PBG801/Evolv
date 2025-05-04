@@ -155,4 +155,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
         return sdf.format(new java.util.Date());
     }
+
+    public void listUsers() {
+        try (SQLiteDatabase db = this.getReadableDatabase();
+             Cursor cursor = db.query(TABLE_USERS,
+                     new String[]{COL_USER_ID, COL_EMAIL, COL_CREATED_AT},
+                     null, null, null, null, COL_CREATED_AT + " DESC")) {
+
+            if (cursor != null && cursor.getCount() > 0) {
+                Log.i("DatabaseUsers", "=== Lista de Usuarios Registrados ===");
+                Log.i("DatabaseUsers", String.format("%-5s | %-30s | %s", "ID", "Email", "Fecha de Registro"));
+                Log.i("DatabaseUsers", "-----------------------------------------------------------");
+
+                while (cursor.moveToNext()) {
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_USER_ID));
+                    String email = cursor.getString(cursor.getColumnIndexOrThrow(COL_EMAIL));
+                    String createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COL_CREATED_AT));
+
+                    Log.i("DatabaseUsers", String.format("%-5d | %-30s | %s", id, email, createdAt));
+                }
+                Log.i("DatabaseUsers", "=== Total: " + cursor.getCount() + " usuarios ===");
+            } else {
+                Log.i("DatabaseUsers", "No hay usuarios registrados en la base de datos.");
+            }
+        } catch (Exception e) {
+            Log.e("DatabaseUsers", "Error listando usuarios", e);
+        }
+    }
 }
