@@ -1,14 +1,15 @@
 package com.example.evolv;
 
+import androidx.recyclerview.widget.RecyclerView;
+import java.util.List;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.activity.OnBackPressedCallback;
@@ -19,11 +20,9 @@ import androidx.lifecycle.Lifecycle;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 
-public class HomeActivity extends AppCompatActivity {    
+public class HomeActivity extends AppCompatActivity {
+    private DatabaseHelper dbHelper; // Aseguramos que sea campo de clase    
     private LanguageManager languageManager;
-    private TextView tvWelcome;
-    private MaterialButton btnLogout;
-    private MaterialToolbar topAppBar;
     private boolean isAnonymous;
 
     @Override
@@ -33,9 +32,9 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        tvWelcome = findViewById(R.id.tvWelcome);
-        btnLogout = findViewById(R.id.btnLogout);
-        topAppBar = findViewById(R.id.topAppBar);
+        TextView tvWelcome = findViewById(R.id.tvWelcome);
+        MaterialButton btnLogout = findViewById(R.id.btnLogout);
+        MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
         
         setSupportActionBar(topAppBar);
 
@@ -57,7 +56,7 @@ public class HomeActivity extends AppCompatActivity {
             public void onPrepareMenu(@NonNull Menu menu) {
                 // Mostrar/ocultar items según el estado de autenticación
                 menu.findItem(R.id.menu_create_account).setVisible(isAnonymous);
-                menu.findItem(R.id.menu_home).setVisible(!isAnonymous);
+                
                 menu.findItem(R.id.menu_calendar).setVisible(!isAnonymous);
                 menu.findItem(R.id.menu_logout).setVisible(!isAnonymous);
             }
@@ -77,9 +76,6 @@ public class HomeActivity extends AppCompatActivity {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
-                    return true;
-                } else if (id == R.id.menu_home) {
-                    // Ya estamos en home, no hacemos nada
                     return true;
                 } else if (id == R.id.menu_calendar) {
                     Toast.makeText(HomeActivity.this, getString(R.string.calendar_coming_soon), Toast.LENGTH_SHORT).show();
@@ -113,6 +109,20 @@ public class HomeActivity extends AppCompatActivity {
 
         // Botón de logout (usa el mismo método que el menú)
         btnLogout.setOnClickListener(v -> logout());
+
+        // --- Lógica para mostrar la lista de plantillas de entrenamiento ---
+        RecyclerView recyclerView = findViewById(R.id.recyclerWorkoutTemplates);
+        dbHelper = new DatabaseHelper(this);
+        List<com.example.evolv.models.WorkoutTemplate> templateList = dbHelper.getAllWorkoutTemplates();
+
+        com.example.evolv.adapters.WorkoutTemplateAdapter adapter = new com.example.evolv.adapters.WorkoutTemplateAdapter(templateList, templateId -> {
+    Intent intent = new Intent(HomeActivity.this, com.example.evolv.activities.WorkoutTemplateDetailActivity.class);
+    intent.putExtra("TEMPLATE_ID", templateId);
+    startActivity(intent);
+});
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        // --- Fin lógica lista de plantillas ---
     }
 
     private void logout() {
@@ -120,5 +130,13 @@ public class HomeActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (dbHelper != null) {
+            dbHelper.close();
+        }
     }
 }

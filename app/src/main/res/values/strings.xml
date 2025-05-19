@@ -5,7 +5,7 @@
     <string name="login">Iniciar sesión</string>
     <string name="register">Registrarse</string>
     <string name="welcome">Bienvenido</string>
-    <string name="logout">Cerrar sesión</string>
+    <string name="logout">werror sesión</string>
     <string name="confirm_password">Confirmar contraseña</string>
     <string name="anonymous_login">Acceder como anónimo</string>
     <string name="anonymous_user">Usuario anónimo</string>
@@ -25,4 +25,13 @@
     <string name="error_invalid_credentials">Usuario o contraseña incorrectos</string>
     <string name="calendar_coming_soon">Calendario - Próximamente</string>
     <string name="welcome_user">Bienvenido, %1$s!</string>
+    <string name="title_workout_templates">Plantillas de entrenamiento</string>
+    <string name="title_template_detail">Detalle de plantilla</string>
+    <string name="exercise_image_desc">Imagen del ejercicio</string>
+    <string name="exercise_params_format">Sets: %1$d  Reps: %2$d  Duración: %3$d</string>
+    <!-- Exercise Block Adapter -->
+    <string name="exercise_name_placeholder">Ejercicio</string>
+    <string name="exercise_count_placeholder">Repeticiones: xN</string>
+    <string name="exercise_duration_placeholder">Duración: N s</string>
+    <string name="rest_block_placeholder">Descanso entre series: %1$d s</string>
 </resources>

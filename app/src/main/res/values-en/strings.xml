@@ -26,4 +26,9 @@
     <string name="error_invalid_credentials">Invalid username or password</string>
     <string name="calendar_coming_soon">Calendar - Coming soon</string>
     <string name="welcome_user">Welcome, %1$s!</string>
+    <!-- Exercise Block Adapter -->
+    <string name="exercise_name_placeholder">Exercise</string>
+    <string name="exercise_count_placeholder">Reps: xN</string>
+    <string name="exercise_duration_placeholder">Duration: N s</string>
+    <string name="rest_block_placeholder">Rest between sets: %1$d s</string>
 </resources>

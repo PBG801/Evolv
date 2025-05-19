@@ -34,4 +34,6 @@
     <!-- Colores de énfasis -->
     <color name="scrim">#1F1B24</color>
     <color name="ripple">#1F645195</color>
+    <color name="purple_100">#E1BEE7</color>
+    <color name="purple_700">#512DA8</color>
 </resources>

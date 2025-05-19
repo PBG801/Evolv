@@ -49,11 +49,23 @@
                 android:id="@+id/tvWelcome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
                 android:text="@string/welcome"
                 android:textAppearance="@style/TextAppearance.Evolv.Title"
                 android:textAlignment="center"
                 tools:text="Welcome User!"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerWorkoutTemplates"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_below="@id/tvWelcome"
+                android:layout_above="@id/btnLogout"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:clipToPadding="false"
+                tools:listitem="@layout/item_workout_template" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"

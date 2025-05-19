@@ -10,11 +10,6 @@
         app:showAsAction="never" />
 
     <!-- Opciones para usuario autenticado -->
-    <item
-        android:id="@+id/menu_home"
-        android:title="@string/welcome"
-        android:visible="false"
-        app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_calendar"
