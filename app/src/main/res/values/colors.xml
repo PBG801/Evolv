@@ -36,4 +36,7 @@
     <color name="ripple">#1F645195</color>
     <color name="purple_100">#E1BEE7</color>
     <color name="purple_700">#512DA8</color>
+    <color name="background">#FFFFFF</color>
+    <color name="teal_200">#80CBC4</color>
+    <color name="teal_700">#00796B</color>
 </resources>

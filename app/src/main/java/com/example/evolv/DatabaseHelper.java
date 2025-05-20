@@ -20,11 +20,34 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class DatabaseHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper implements AutoCloseable {
     private static final String DATABASE_NAME = "evolv.db";
     private static final int DATABASE_VERSION = 1;
     
     // Tabla user
+
+    /**
+     * Devuelve la lista completa de ejercicios ordenada alfabéticamente por nombre.
+     */
+    public List<com.example.evolv.models.Exercise> getAllExercises() {
+        List<com.example.evolv.models.Exercise> exercises = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT exercise_id, name, img_url, description_text, created_at FROM exercise ORDER BY name ASC", null);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow("exercise_id"));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                String imgUrl = cursor.getString(cursor.getColumnIndexOrThrow("img_url"));
+                String desc = cursor.getString(cursor.getColumnIndexOrThrow("description_text"));
+                String createdAt = cursor.getString(cursor.getColumnIndexOrThrow("created_at"));
+                exercises.add(new com.example.evolv.models.Exercise(id, name, imgUrl, desc, createdAt));
+            }
+            cursor.close();
+        }
+        return exercises;
+    }
+
+
     private static final String TABLE_USERS = "user";
     private static final String COL_USER_ID = "user_id";
     private static final String COL_EMAIL = "email";
@@ -79,7 +102,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     private void copyDatabaseIfNeeded() throws IOException {
         File dbFile = context.getDatabasePath(DATABASE_NAME);
+        Log.d("EvolvDB", "Intentando copiar base de datos a: " + dbFile.getAbsolutePath());
         if (!dbFile.exists()) {
+            Log.d("EvolvDB", "Base de datos NO existe. Copiando desde assets...");
             dbFile.getParentFile().mkdirs();
             InputStream input = context.getAssets().open("databases/" + DATABASE_NAME);
             OutputStream output = new FileOutputStream(dbFile);
@@ -92,8 +117,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             output.close();
             input.close();
             Log.i("DatabaseHelper", "Base de datos copiada desde assets a " + dbFile.getAbsolutePath());
+Log.d("EvolvDB", "Copia completada. Archivo existe: " + dbFile.exists());
         } else {
             Log.i("DatabaseHelper", "Base de datos ya existe en " + dbFile.getAbsolutePath());
+Log.d("EvolvDB", "No se copió la base de datos porque ya existía.");
         }
     }
 
@@ -311,6 +338,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 String exName = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 String exImg = cursor.getString(cursor.getColumnIndexOrThrow("img_url"));
                 String exDesc = cursor.getString(cursor.getColumnIndexOrThrow("description_text"));
+Log.d("EvolvDB", "Desc para " + exName + ": " + exDesc);
                 String exCreated = cursor.getString(cursor.getColumnIndexOrThrow("created_at"));
                 com.example.evolv.models.Exercise exercise = new com.example.evolv.models.Exercise(eId, exName, exImg, exDesc, exCreated);
                 result.add(new com.example.evolv.models.WorkoutTemplateExercise(tId, eId, order, sets, reps, duration, rest, restSeries, durationType, exercise));

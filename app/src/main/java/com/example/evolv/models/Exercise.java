@@ -4,7 +4,21 @@ package com.example.evolv.models;
  * Modelo para la tabla 'exercise'.
  * Los IDs son tipo long para compatibilidad con INTEGER de SQLite.
  */
-public class Exercise {
+import java.io.Serializable;
+
+public class Exercise implements Serializable {
+    // ... (resto de atributos y métodos)
+    /**
+     * Devuelve el nombre localizado del ejercicio usando ExerciseNameMapper.
+     * Esto permite que el Spinner y otros componentes muestren el nombre correcto según el idioma.
+     */
+    @Override
+    public String toString() {
+        // NOTA: Se asume que ExerciseNameMapper usa el contexto global de la app o se le pasa el contexto cuando se usa en UI
+        // Aquí solo devolvemos el campo name como fallback para evitar errores en contextos no UI
+        return name;
+    }
+
     // ID único del ejercicio (corresponde a exercise_id en la base de datos)
     private long exercise_id;
     // Nombre del ejercicio
@@ -49,4 +63,5 @@ public class Exercise {
 
     public String getCreated_at() { return created_at; }
     public void setCreated_at(String created_at) { this.created_at = created_at; }
+
 }

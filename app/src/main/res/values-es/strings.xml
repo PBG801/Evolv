@@ -27,4 +27,24 @@
     <string name="calendar_coming_soon">Calendario - Próximamente</string>
     <string name="welcome_user">Bienvenido, %1$s!</string>
     <string name="rest_block_placeholder">Descanso entre series: %1$d s</string>
+    <string name="title_workout_templates">Plantillas de entrenamiento</string>
+    <string name="title_template_detail">Detalle de plantilla</string>
+    <string name="exercise_image_desc">Imagen del ejercicio</string>
+    <string name="exercise_params_format">Sets: %1$d  Reps: %2$d  Duración: %3$d</string>
+    <string name="exercise_name_placeholder">Ejercicio</string>
+    <string name="exercise_count_placeholder">Repeticiones: xN</string>
+    <string name="exercise_duration_placeholder">Duración: N s</string>
+    <string name="pause">Pausar</string>
+    <string name="resume">Reanudar</string>
+    <string name="next">Siguiente</string>
+    <string name="play">Reproducir</string>
+    <string name="play_all">Reproducir todo</string>
+    <string name="no_exercises_to_play">No hay ejercicios para reproducir</string>
+    <string name="exercise_progress">Ejercicio %1$d de %2$d</string>
+    <string name="no_exercises_found">No se encontraron ejercicios</string>
+    <string name="workout_complete">¡Entrenamiento terminado!</string>
+    <string name="rest_title">Descanso</string>
+    <string name="next_exercise_info">Próximo ejercicio: %1$s
+%2$s</string>
+    <string name="rest">Descanso</string>
 </resources>

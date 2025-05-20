@@ -1,5 +1,9 @@
 package com.example.evolv.adapters;
 
+import android.content.Context;
+import android.content.Intent;
+import java.util.ArrayList;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +58,7 @@ public class ExerciseBlockAdapter extends RecyclerView.Adapter<RecyclerView.View
             return new RestViewHolder(view);
         } else {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_exercise_block, parent, false);
-            return new ExerciseViewHolder(view);
+            return new ExerciseViewHolder(view, this);
         }
     }
 
@@ -69,28 +73,21 @@ public class ExerciseBlockAdapter extends RecyclerView.Adapter<RecyclerView.View
                 vh.textCount.setText(item.sets + " sets x " + item.reps + " reps");
                 int totalDuration = item.sets * item.reps * item.durationPerRep;
                 vh.textDuration.setText(totalDuration + " s");
-            } else if (item.sets > 0) {
-                vh.textCount.setText(item.sets + " sets");
-                vh.textDuration.setText("");
-            } else if (item.reps > 0) {
-                vh.textCount.setText("x" + item.reps + " reps");
-                vh.textDuration.setText("");
             } else {
                 vh.textCount.setText("");
                 vh.textDuration.setText("");
             }
-            // Cargar imagen específica si existe, usando el campo img_url
-            int resId = holder.itemView.getContext().getResources().getIdentifier(
-                item.exercise.getImg_url(), "drawable", holder.itemView.getContext().getPackageName());
-            if (resId != 0) {
-                vh.imageExercise.setImageResource(resId);
-            } else {
-                vh.imageExercise.setImageResource(R.drawable.ic_exercise_placeholder);
-            }
+            // Imagen
+            // [LIMPIEZA] Eliminada lógica obsoleta de imgUrl; se asigna siempre el placeholder
+            vh.imageExercise.setImageResource(R.drawable.ic_exercise_placeholder);
         } else if (item.type == TYPE_REST) {
             RestViewHolder vh = (RestViewHolder) holder;
             vh.textRest.setText(holder.itemView.getContext().getString(R.string.rest_block_placeholder, item.restDuration));
         }
+    }
+
+    public Item getItem(int position) {
+        return items.get(position);
     }
 
     @Override
@@ -101,13 +98,17 @@ public class ExerciseBlockAdapter extends RecyclerView.Adapter<RecyclerView.View
     public static class ExerciseViewHolder extends RecyclerView.ViewHolder {
         ImageView imageExercise;
         TextView textName, textCount, textDuration;
-        public ExerciseViewHolder(@NonNull View itemView) {
+        private final ExerciseBlockAdapter adapter;
+        public ExerciseViewHolder(@NonNull View itemView, ExerciseBlockAdapter adapter) {
             super(itemView);
+            this.adapter = adapter;
             imageExercise = itemView.findViewById(R.id.imageExercise);
             textName = itemView.findViewById(R.id.textExerciseName);
             textCount = itemView.findViewById(R.id.textExerciseCount);
             textDuration = itemView.findViewById(R.id.textExerciseDuration);
+
         }
+
     }
     public static class RestViewHolder extends RecyclerView.ViewHolder {
         TextView textRest;

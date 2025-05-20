@@ -15,6 +15,14 @@
     <string name="language">Idioma</string>
     <string name="spanish">Español</string>
     <string name="english">English</string>
+    <!-- Formulario de parámetros de ejercicio -->
+    <string name="label_exercise">Ejercicio</string>
+    <string name="label_series">Series</string>
+    <string name="label_reps">Repeticiones</string>
+    <string name="label_execution_time">Tiempo de ejecución (seg)</string>
+    <string name="label_rest_time">Descanso (seg)</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
     <!-- Mensajes de error y notificaciones -->
     <string name="error_empty_fields">Por favor complete todos los campos</string>
     <string name="error_invalid_email">Por favor ingrese un email válido</string>
@@ -34,4 +42,29 @@
     <string name="exercise_count_placeholder">Repeticiones: xN</string>
     <string name="exercise_duration_placeholder">Duración: N s</string>
     <string name="rest_block_placeholder">Descanso entre series: %1$d s</string>
+    <string name="pause">Pausar</string>
+    <string name="resume">Reanudar</string>
+    <string name="next">Siguiente</string>
+    <string name="play">Reproducir</string>
+    <string name="play_all">Reproducir todo</string>
+    <string name="no_exercises_to_play">No hay ejercicios para reproducir</string>
+    <string name="exercise_progress">Ejercicio %1$d de %2$d</string>
+    <string name="no_exercises_found">No se encontraron ejercicios</string>
+    <string name="workout_complete">¡Entrenamiento terminado!</string>
+    <string name="rest_title">Descanso</string>
+    <string name="next_exercise_info">Próximo ejercicio: %1$s
+%2$s</string>
+    <string name="rest">Descanso</string>
+    <string name="rest_time">Tiempo de descanso</string>
+    <string name="exercise_1_name">Flexiones</string>
+    <string name="exercise_2_name">Sentadillas</string>
+    <string name="exercise_3_name">Plancha</string>
+    <string name="exercise_4_name">Burpees</string>
+    <string name="exercise_5_name">Abdominales</string>
+    <string name="exercise_6_name">Zancadas</string>
+    <string name="exercise_7_name">Dominadas</string>
+    <string name="exercise_8_name">Fondos de tríceps</string>
+    <string name="exercise_9_name">Mountain climbers</string>
+    <string name="exercise_10_name">Jumping jacks</string>
+    <string name="exercise_unknown">Ejercicio desconocido</string>
 </resources>

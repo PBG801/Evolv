@@ -17,10 +17,7 @@ import java.util.List;
  * Activity que muestra el detalle de una plantilla y sus ejercicios asociados.
  */
 public class WorkoutTemplateDetailActivity extends AppCompatActivity {
-    private TextView textTemplateName, textTemplateType, textTemplateNotes;
-    private RecyclerView recyclerView;
     private ExerciseBlockAdapter adapter;
-    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,55 +28,77 @@ public class WorkoutTemplateDetailActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        textTemplateName = findViewById(R.id.textTemplateName);
-        textTemplateType = findViewById(R.id.textTemplateType);
-        textTemplateNotes = findViewById(R.id.textTemplateNotes);
-        recyclerView = findViewById(R.id.recyclerTemplateExercises);
+        TextView textTemplateName = findViewById(R.id.textTemplateName);
+        TextView textTemplateType = findViewById(R.id.textTemplateType);
+        TextView textTemplateNotes = findViewById(R.id.textTemplateNotes);
+        RecyclerView recyclerView = findViewById(R.id.recyclerTemplateExercises);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        dbHelper = new DatabaseHelper(this);
-        android.util.Log.d("WorkoutDetail", "DatabaseHelper inicializado");
-        long templateId = getIntent().getLongExtra("TEMPLATE_ID", -1);
-        android.util.Log.d("WorkoutDetail", "templateId recibido: " + templateId);
-        if (templateId != -1) {
-            android.util.Log.d("WorkoutDetail", "Consultando WorkoutTemplate por ID...");
-            WorkoutTemplate template = dbHelper.getWorkoutTemplateById(templateId);
-            if (template != null) {
-                android.util.Log.d("WorkoutDetail", "WorkoutTemplate obtenido: " + template.getName());
-                textTemplateName.setText(template.getName());
-                textTemplateType.setText(template.getWorkoutType());
-                textTemplateNotes.setText(template.getNotes());
-            } else {
-                android.util.Log.e("WorkoutDetail", "WorkoutTemplate es null para ID: " + templateId);
+        android.widget.Button btnPlayAll = findViewById(R.id.btnPlayAll);
+        btnPlayAll.setOnClickListener(v -> {
+    // Obtener la lista de ejercicios del adapter
+    if (adapter != null && adapter.getItemCount() > 0) {
+        java.util.ArrayList<com.example.evolv.models.Exercise> playList = new java.util.ArrayList<>();
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            ExerciseBlockAdapter.Item item = adapter.getItem(i);
+            if (item.type == ExerciseBlockAdapter.TYPE_EXERCISE && item.exercise != null) {
+                playList.add(item.exercise);
             }
-            android.util.Log.d("WorkoutDetail", "Consultando ejercicios para la plantilla...");
-            List<WorkoutTemplateExercise> exercises = dbHelper.getExercisesForTemplate(templateId);
-android.util.Log.d("WorkoutDetail", "Ejercicios obtenidos: " + (exercises != null ? exercises.size() : "null"));
-// Construir la lista de bloques para el Adapter SOLO con ejercicios individuales
-// No se agrupan ni se suman sets, y no se incluyen descansos
-java.util.List<ExerciseBlockAdapter.Item> blocks = new java.util.ArrayList<>();
-if (exercises != null && !exercises.isEmpty()) {
-    for (WorkoutTemplateExercise curr : exercises) {
-        // Crear un bloque por cada ejercicio, usando sus valores individuales
-        // Se asume que getSets(), getRepetitions() y getTargetDuration() nunca son null, si pueden ser null usar valores por defecto
-        blocks.add(new ExerciseBlockAdapter.Item(
-            ExerciseBlockAdapter.TYPE_EXERCISE,
-            curr.getExercise(),
-            curr.getSets() != null ? curr.getSets() : 1, // Si es null, usar 1
-            curr.getRepetitions() != null ? curr.getRepetitions() : 1, // Si es null, usar 1
-            curr.getTargetDuration() != null ? curr.getTargetDuration() : 0, // Si es null, usar 0
-            0 // No se usa restDuration para ejercicios
-        ));
+        }
+        if (!playList.isEmpty()) {
+            // LOG: Verificar datos antes de lanzar el intent
+            for (com.example.evolv.models.Exercise ex : playList) {
+                android.util.Log.d("EvolvDebug", "ENVIANDO Ejercicio: " + ex.getName() + " desc: " + ex.getDescription_text());
+            }
+            android.content.Intent intent = new android.content.Intent(this, com.example.evolv.activities.WorkoutPlayerActivity.class);
+            intent.putExtra("exercise_list", playList);
+            startActivity(intent);
+        } else {
+            android.widget.Toast.makeText(this, getString(R.string.no_exercises_to_play), android.widget.Toast.LENGTH_SHORT).show();
+        }
+    } else {
+        android.widget.Toast.makeText(this, getString(R.string.no_exercises_to_play), android.widget.Toast.LENGTH_SHORT).show();
     }
-}
-// Fin de la lista de bloques. No se agregan descansos ni lógica de agrupamiento.
+});
 
-
-adapter = new ExerciseBlockAdapter(blocks);
-recyclerView.setAdapter(adapter);
-android.util.Log.d("WorkoutDetail", "Adapter asignado al RecyclerView");
+        try (DatabaseHelper dbHelper = new DatabaseHelper(this)) {
+            android.util.Log.d("WorkoutDetail", "DatabaseHelper inicializado");
+            long templateId = getIntent().getLongExtra("TEMPLATE_ID", -1);
+            android.util.Log.d("WorkoutDetail", "templateId recibido: " + templateId);
+            if (templateId != -1) {
+                android.util.Log.d("WorkoutDetail", "Consultando WorkoutTemplate por ID...");
+                WorkoutTemplate template = dbHelper.getWorkoutTemplateById(templateId);
+                if (template != null) {
+                    android.util.Log.d("WorkoutDetail", "WorkoutTemplate obtenido: " + template.getName());
+                    textTemplateName.setText(template.getName());
+                    textTemplateType.setText(template.getWorkoutType());
+                    textTemplateNotes.setText(template.getNotes());
+                } else {
+                    android.util.Log.e("WorkoutDetail", "WorkoutTemplate es null para ID: " + templateId);
+                }
+                android.util.Log.d("WorkoutDetail", "Consultando ejercicios para la plantilla...");
+                List<WorkoutTemplateExercise> exercises = dbHelper.getExercisesForTemplate(templateId);
+                android.util.Log.d("WorkoutDetail", "Ejercicios obtenidos: " + (exercises != null ? exercises.size() : "null"));
+                java.util.List<ExerciseBlockAdapter.Item> blocks = new java.util.ArrayList<>();
+                if (exercises != null && !exercises.isEmpty()) {
+                    for (WorkoutTemplateExercise curr : exercises) {
+                        // Crear un bloque por cada ejercicio, usando sus valores individuales
+                        // Se asume que getSets(), getRepetitions() y getTargetDuration() nunca son null, si pueden ser null usar valores por defecto
+                        blocks.add(new ExerciseBlockAdapter.Item(
+                            ExerciseBlockAdapter.TYPE_EXERCISE,
+                            curr.getExercise(),
+                            curr.getSets() != null ? curr.getSets() : 1, // Si es null, usar 1
+                            curr.getRepetitions() != null ? curr.getRepetitions() : 1, // Si es null, usar 1
+                            curr.getTargetDuration() != null ? curr.getTargetDuration() : 0, // Si es null, usar 0
+                            0 // No se usa restDuration para ejercicios
+                        ));
+                    }
+                }
+                adapter = new ExerciseBlockAdapter(blocks);
+                recyclerView.setAdapter(adapter);
+                android.util.Log.d("WorkoutDetail", "Adapter asignado al RecyclerView");
         } else {
             android.util.Log.e("WorkoutDetail", "templateId no válido recibido");
         }
+    }
     }
 }

@@ -16,6 +16,14 @@
     <string name="language">Language</string>
     <string name="spanish">Spanish</string>
     <string name="english">English</string>
+    <!-- Exercise parameters form -->
+    <string name="label_exercise">Exercise</string>
+    <string name="label_series">Sets</string>
+    <string name="label_reps">Repetitions</string>
+    <string name="label_execution_time">Execution time (sec)</string>
+    <string name="label_rest_time">Rest (sec)</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
     <!-- Error and notification messages -->
     <string name="error_empty_fields">Please fill in all fields</string>
     <string name="error_invalid_email">Please enter a valid email</string>
@@ -31,4 +39,32 @@
     <string name="exercise_count_placeholder">Reps: xN</string>
     <string name="exercise_duration_placeholder">Duration: N s</string>
     <string name="rest_block_placeholder">Rest between sets: %1$d s</string>
+    <string name="title_workout_templates">Workout Templates</string>
+    <string name="title_template_detail">Template Detail</string>
+    <string name="exercise_image_desc">Exercise image</string>
+    <string name="exercise_params_format">Sets: %1$d  Reps: %2$d  Duration: %3$d</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="next">Next</string>
+    <string name="play">Play</string>
+    <string name="play_all">Play all</string>
+    <string name="no_exercises_to_play">No exercises to play</string>
+    <string name="exercise_progress">Exercise %1$d of %2$d</string>
+    <string name="no_exercises_found">No exercises found</string>
+    <string name="workout_complete">Workout complete!</string>
+    <string name="rest_title">Rest</string>
+    <string name="next_exercise_info">Next exercise: %1$s
+%2$s</string>
+    <string name="rest">Rest</string>
+    <string name="exercise_1_name">Push-ups</string>
+    <string name="exercise_2_name">Squats</string>
+    <string name="exercise_3_name">Plank</string>
+    <string name="exercise_4_name">Burpees</string>
+    <string name="exercise_5_name">Crunches</string>
+    <string name="exercise_6_name">Lunges</string>
+    <string name="exercise_7_name">Pull-ups</string>
+    <string name="exercise_8_name">Triceps dips</string>
+    <string name="exercise_9_name">Mountain climbers</string>
+    <string name="exercise_10_name">Jumping jacks</string>
+    <string name="exercise_unknown">Unknown exercise</string>
 </resources>

@@ -38,5 +38,9 @@
             android:name=".activities.WorkoutTemplateDetailActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.WorkoutPlayerActivity"
+            android:exported="false" />
+
     </application>
 </manifest>
