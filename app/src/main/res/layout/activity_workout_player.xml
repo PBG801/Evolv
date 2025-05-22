@@ -8,6 +8,76 @@
     android:padding="24dp"
     android:background="@color/surface_variant">
 
+    <!-- Pantalla de introducción al entrenamiento -->
+    <LinearLayout
+        android:id="@+id/introContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@color/surface_variant"
+        android:padding="24dp"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/textWorkoutNameIntro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/purple_dark"
+            android:gravity="center"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="@string/workout_name"/>
+
+        <TextView
+            android:id="@+id/textIntroTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/first_exercise_intro"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/purple_primary"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="@string/first_exercise_intro"/>
+
+        <TextView
+            android:id="@+id/textIntroExerciseName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/purple_dark"
+            android:gravity="center"
+            android:layout_marginBottom="6dp"
+            android:contentDescription="@string/exercise_name_placeholder"/>
+
+        <TextView
+            android:id="@+id/textIntroExerciseDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="@color/on_surface_light"
+            android:gravity="center"
+            android:layout_marginBottom="18dp"
+            android:contentDescription="@string/exercise_params_format"/>
+        
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnIntroNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/next"
+            android:layout_marginTop="8dp"
+            style="@style/Widget.MaterialComponents.Button"
+            app:cornerRadius="24dp"
+            app:iconPadding="8dp"
+            android:backgroundTint="@color/purple_primary"
+            android:textColor="@color/white"
+            android:contentDescription="@string/next" />
+    </LinearLayout>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cardCentral"
         android:layout_width="match_parent"
@@ -21,17 +91,17 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="237dp"
+            android:layout_height="400dp"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="20dp">
 
             <ImageView
                 android:id="@+id/imageExercise"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="121dp"
+                android:layout_height="117dp"
                 android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_card"
+                android:background="@android:color/transparent"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_exercise_placeholder" />
 
@@ -47,29 +117,39 @@
 
             <TextView
                 android:id="@+id/textExerciseName"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLines="2"
+                android:ellipsize="end"
                 android:layout_marginBottom="4dp"
                 android:textColor="@color/purple_primary"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center" />
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="8dp"
+            android:fillViewport="true">
             <TextView
                 android:id="@+id/textExerciseDesc"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
                 android:gravity="center"
                 android:textColor="@color/on_surface_light"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:maxLines="4"
+                android:ellipsize="end" />
+        </ScrollView>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
     <ProgressBar
         android:id="@+id/progressBar"
         style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_width="161dp"
-        android:layout_height="138dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_gravity="center"
         android:layout_marginBottom="8dp"
         android:indeterminate="false"
@@ -81,7 +161,7 @@
         android:id="@+id/textTimer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="30"
+        android:text="@string/number_30"
         android:textSize="32sp"
         android:textColor="@color/purple_primary"
         android:layout_marginBottom="16dp"/>
@@ -109,15 +189,27 @@
             app:cornerRadius="24dp"/>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textRestLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/rest_time"
-        android:textSize="18sp"
-        android:textColor="@color/purple_primary"
-        android:layout_gravity="center_horizontal|bottom"
-        android:layout_marginTop="24dp"
-        android:visibility="gone"/>
+
+    <!-- Pantalla de fin de entrenamiento -->
+    <LinearLayout
+        android:id="@+id/finalContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@color/surface_variant"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/textFinishTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/workout_complete"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/purple_primary"
+            android:gravity="center"
+            android:layout_marginBottom="20dp" />
+    </LinearLayout>
 
 </LinearLayout>

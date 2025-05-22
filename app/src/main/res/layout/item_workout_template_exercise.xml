@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.Evolv.Title"
                 android:textColor="?attr/colorOnSurface"
-                android:text="Ejercicio" />
+                android:text="@string/exercise_name_label" />
 
             <TextView
                 android:id="@+id/textExerciseParams"
@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.Evolv.Body"
                 android:textColor="?attr/colorOnSurface"
-                android:text="Sets / Reps / Duración" />
+                android:text="@string/sets_reps_duration_label" />
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

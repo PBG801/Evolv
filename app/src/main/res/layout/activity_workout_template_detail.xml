@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.Evolv.Title"
             android:textColor="?attr/colorOnSurface"
-            android:text="Plantilla" />
+            android:text="@string/template_label" />
 
         <TextView
             android:id="@+id/textTemplateType"
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.Evolv.Body"
             android:textColor="?attr/colorOnSurface"
-            android:text="Tipo" />
+            android:text="@string/template_type_label" />
 
         <TextView
             android:id="@+id/textTemplateNotes"
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.Evolv.Body"
             android:textColor="?attr/colorOnSurface"
-            android:text="Notas"
+            android:text="@string/template_notes_label"
             android:maxLines="2"
             android:ellipsize="end" />
     </LinearLayout>
