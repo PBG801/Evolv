@@ -1,5 +1,6 @@
 package com.example.evolv;
 
+import android.view.View;
 import android.content.Intent;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
@@ -53,9 +54,13 @@ public class RegisterActivityTest {
         // Intentar registrar sin completar campos
         onView(withId(R.id.btnConfirmRegister)).perform(click());
 
+        // Obtener decorView de la Activity
+        final View[] decorView = new View[1];
+        scenario.onActivity(activity -> decorView[0] = activity.getWindow().getDecorView());
+
         // Verificar mensaje de error
         onView(withText("Por favor complete todos los campos"))
-                .inRoot(withDecorView(not(is(scenario.getResult().getDecorView()))))
+                .inRoot(withDecorView(not(is(decorView[0]))))
                 .check(matches(isDisplayed()));
     }
 
@@ -69,9 +74,13 @@ public class RegisterActivityTest {
         onView(withId(R.id.etRegConfirmPassword)).perform(typeText("password123"), closeSoftKeyboard());
         onView(withId(R.id.btnConfirmRegister)).perform(click());
 
+        // Obtener decorView de la Activity
+        final View[] decorView = new View[1];
+        scenario.onActivity(activity -> decorView[0] = activity.getWindow().getDecorView());
+
         // Verificar mensaje de error
         onView(withText("Por favor ingrese un email válido"))
-                .inRoot(withDecorView(not(is(scenario.getResult().getDecorView()))))
+                .inRoot(withDecorView(not(is(decorView[0]))))
                 .check(matches(isDisplayed()));
     }
 
@@ -85,9 +94,13 @@ public class RegisterActivityTest {
         onView(withId(R.id.etRegConfirmPassword)).perform(typeText("different123"), closeSoftKeyboard());
         onView(withId(R.id.btnConfirmRegister)).perform(click());
 
+        // Obtener decorView de la Activity
+        final View[] decorView = new View[1];
+        scenario.onActivity(activity -> decorView[0] = activity.getWindow().getDecorView());
+
         // Verificar mensaje de error
         onView(withText("Las contraseñas no coinciden"))
-                .inRoot(withDecorView(not(is(scenario.getResult().getDecorView()))))
+                .inRoot(withDecorView(not(is(decorView[0]))))
                 .check(matches(isDisplayed()));
     }
 
@@ -105,9 +118,13 @@ public class RegisterActivityTest {
         onView(withId(R.id.etRegConfirmPassword)).perform(typeText("password123"), closeSoftKeyboard());
         onView(withId(R.id.btnConfirmRegister)).perform(click());
 
+        // Obtener decorView de la Activity
+        final View[] decorView = new View[1];
+        scenario.onActivity(activity -> decorView[0] = activity.getWindow().getDecorView());
+
         // Verificar mensaje de error
         onView(withText("El email ya está registrado"))
-                .inRoot(withDecorView(not(is(scenario.getResult().getDecorView()))))
+                .inRoot(withDecorView(not(is(decorView[0]))))
                 .check(matches(isDisplayed()));
 
         // Limpiar la base de datos
@@ -124,9 +141,13 @@ public class RegisterActivityTest {
         onView(withId(R.id.etRegConfirmPassword)).perform(typeText("password123"), closeSoftKeyboard());
         onView(withId(R.id.btnConfirmRegister)).perform(click());
 
+        // Obtener decorView de la Activity
+        final View[] decorView = new View[1];
+        scenario.onActivity(activity -> decorView[0] = activity.getWindow().getDecorView());
+
         // Verificar mensaje de éxito
         onView(withText("Registro exitoso. Por favor, inicie sesión."))
-                .inRoot(withDecorView(not(is(scenario.getResult().getDecorView()))))
+                .inRoot(withDecorView(not(is(decorView[0]))))
                 .check(matches(isDisplayed()));
 
         // Verificar navegación a MainActivity

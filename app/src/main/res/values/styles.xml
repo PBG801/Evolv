@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Estilo requerido por el test ResourcesTest.java -->
+    <style name="Widget.Material3.PopupMenu.Overflow.Custom" parent="Widget.Material3.PopupMenu.Overflow">
+        <!-- Personaliza aquí según tus necesidades -->
+        <item name="android:background">@color/surface_variant</item>
+        <item name="android:textColor">@color/purple_dark</item>
+    </style>
+</resources>

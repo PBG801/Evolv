@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="4dp">
+
+    <!-- Número de orden a la izquierda -->
+    <TextView
+        android:id="@+id/textExerciseOrder"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:gravity="center"/>
+
+    <!-- Spinner para elegir el ejercicio -->
+    <Spinner
+        android:id="@+id/spinnerExercise"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
+
+    <!-- Botón editar (lápiz) -->
+    <ImageButton
+        android:id="@+id/btnEditExercise"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@android:drawable/ic_menu_edit"
+        android:contentDescription="@string/edit_exercise"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginEnd="8dp"
+        android:visibility="gone"/>
+
+    <!-- Botón eliminar -->
+    <ImageButton
+        android:id="@+id/btnDeleteExercise"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="@string/delete_exercise"
+        android:background="?attr/selectableItemBackgroundBorderless"/>
+</LinearLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="workout_type_options">
+        <item>Selecciona tipo de entrenamiento...</item>
+        <item>Fuerza</item>
+        <item>Cardio</item>
+        <item>HIIT</item>
+        <item>Movilidad</item>
+        <item>Otro</item>
+    </string-array>
+    <string-array name="exercise_spinner_hint">
+        <item>Selecciona ejercicio...</item>
+    </string-array>
+</resources>

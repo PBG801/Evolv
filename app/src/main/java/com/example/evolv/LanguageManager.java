@@ -1,13 +1,13 @@
-package com.example.evolv;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.os.LocaleList;
 
-import java.util.Locale;
+import android.app.Activity; // NECESARIO: Para el método recreateApp(Activity activity)
+import android.content.Context; // NECESARIO: Para obtener recursos y preferencias
+import android.content.SharedPreferences; // NECESARIO: Para persistencia de idioma
+import android.content.res.Configuration; // NECESARIO: Para actualizar configuración de idioma
+import android.content.res.Resources; // NECESARIO: Para acceder a recursos
+import android.os.LocaleList; // NECESARIO: Para soportar múltiples locales
+
+import java.util.Locale; // NECESARIO: Para gestionar el idioma actual
 
 public class LanguageManager {
     private static final String PREFS_NAME = "LanguagePrefs";

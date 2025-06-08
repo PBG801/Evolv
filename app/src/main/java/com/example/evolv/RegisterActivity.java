@@ -2,23 +2,24 @@ package com.example.evolv;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Toast;
-import androidx.activity.OnBackPressedCallback;
+import android.view.View; // NECESARIO: Se usa en setOnClickListener
+import android.widget.Toast; // NECESARIO: Se usa para mostrar mensajes
+import androidx.activity.OnBackPressedCallback; // NECESARIO: Se usa para el manejo personalizado del botón back
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.button.MaterialButton; // NECESARIO: Se usa para el botón de registro
+import com.google.android.material.textfield.TextInputEditText; // NECESARIO: Se usa para los campos de texto
 
 public class RegisterActivity extends AppCompatActivity {
-    private LanguageManager languageManager;
+
+    // --- Atributos privados ---
+
     private TextInputEditText etEmail, etPassword, etConfirmPassword;
     private MaterialButton btnRegister;
     private DatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        languageManager = new LanguageManager(this);
-        languageManager.applyLanguage();
+        // --- Inicialización de la UI y recursos ---
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
@@ -45,26 +46,31 @@ public class RegisterActivity extends AppCompatActivity {
                 String password = etPassword.getText().toString().trim();
                 String confirmPassword = etConfirmPassword.getText().toString().trim();
 
+                // --- Validación de campos vacíos ---
                 if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                     Toast.makeText(RegisterActivity.this, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // --- Validación de formato de email ---
                 if (!isValidEmail(email)) {
                     Toast.makeText(RegisterActivity.this, getString(R.string.error_invalid_email), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // --- Validación de coincidencia de contraseñas ---
                 if (!password.equals(confirmPassword)) {
                     Toast.makeText(RegisterActivity.this, getString(R.string.error_passwords_not_match), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // --- Validación de disponibilidad de email ---
                 if (!databaseHelper.isEmailAvailable(email)) {
                     Toast.makeText(RegisterActivity.this, getString(R.string.error_email_exists), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // --- Inserción en base de datos ---
                 if (databaseHelper.insertUser(email, password)) {
                     Toast.makeText(RegisterActivity.this, getString(R.string.success_register), Toast.LENGTH_SHORT).show();
                     
@@ -80,7 +86,18 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     public static boolean isValidEmail(String email) {
+        // --- Patrón simple para validar emails ---
         String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.[a-z]+";
         return email != null && email.matches(emailPattern);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (databaseHelper != null) {
+            databaseHelper.close();
+        }
+        databaseHelper = null;
+    }
 }
+

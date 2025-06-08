@@ -1,6 +1,6 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android") version "1.9.0" apply false
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -10,6 +10,9 @@ android {
     sourceSets {
         getByName("main") {
             java.srcDirs("src/main/java")
+        }
+        getByName("androidTest") {
+            java.srcDirs("src/androidTest/java")
         }
     }
 

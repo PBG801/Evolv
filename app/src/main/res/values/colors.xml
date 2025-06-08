@@ -39,4 +39,12 @@
     <color name="background">#FFFFFF</color>
     <color name="teal_200">#80CBC4</color>
     <color name="teal_700">#00796B</color>
+    <!-- Colores diferenciadores para pantallas -->
+    <color name="exercise_background">#E6F5EA</color>
+    <color name="rest_background">#E3F2FD</color>
+    <color name="defaultWorkoutBackground">#FFF9C4</color>
+    <color name="selected_item_background">#FFE082</color>
+    <color name="template_default_bg">#2196F3</color>
+    <color name="template_paused_bg">#FFA726</color>
+    <color name="template_normal_bg">#FFFFFF</color>
 </resources>

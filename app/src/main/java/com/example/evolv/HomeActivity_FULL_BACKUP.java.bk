@@ -1,0 +1,157 @@
+package com.example.evolv;
+
+import androidx.recyclerview.widget.RecyclerView;
+import java.util.List;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuProvider;
+import androidx.lifecycle.Lifecycle;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
+
+public class HomeActivity_FULL_BACKUP extends AppCompatActivity {
+    private RecyclerView recyclerView;
+    private com.example.evolv.adapters.WorkoutTemplateAdapter adapter;
+    private DatabaseHelper dbHelper;
+    private boolean isAnonymous;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_home);
+        TextView tvWelcome = findViewById(R.id.tvWelcome);
+        MaterialButton btnLogout = findViewById(R.id.btnLogout);
+        MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
+        setSupportActionBar(topAppBar);
+        com.google.android.material.floatingactionbutton.FloatingActionButton fabAddTemplate = findViewById(R.id.fabAddTemplate);
+        fabAddTemplate.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity_FULL_BACKUP.this, com.example.evolv.activities.EditWorkoutTemplateActivity.class);
+            startActivity(intent);
+        });
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isAnonymous) {
+                    finish();
+                } else {
+                    moveTaskToBack(true);
+                }
+            }
+        });
+        addMenuProvider(new MenuProvider() {
+            @Override
+            public void onPrepareMenu(@NonNull Menu menu) {
+                menu.findItem(R.id.menu_create_account).setVisible(isAnonymous);
+                menu.findItem(R.id.menu_calendar).setVisible(!isAnonymous);
+                menu.findItem(R.id.menu_logout).setVisible(!isAnonymous);
+            }
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.top_app_bar_menu, menu);
+            }
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                int id = menuItem.getItemId();
+                if (id == R.id.menu_create_account) {
+                    Intent intent = new Intent(HomeActivity_FULL_BACKUP.this, RegisterActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                    return true;
+                } else if (id == R.id.menu_calendar) {
+                    Toast.makeText(HomeActivity_FULL_BACKUP.this, getString(R.string.calendar_coming_soon), Toast.LENGTH_SHORT).show();
+                    return true;
+                } else if (id == R.id.menu_logout) {
+                    logout();
+                    return true;
+                }
+                return false;
+            }
+        }, this, Lifecycle.State.RESUMED);
+        String email = getIntent().getStringExtra("email");
+        isAnonymous = getIntent().getBooleanExtra("isAnonymous", false);
+        if (email != null && !email.isEmpty()) {
+            if (isAnonymous) {
+                tvWelcome.setText(email);
+            } else {
+                tvWelcome.setText(getString(R.string.welcome_user, email));
+            }
+        }
+        btnLogout.setOnClickListener(v -> logout());
+        recyclerView = findViewById(R.id.recyclerWorkoutTemplates);
+        dbHelper = new DatabaseHelper(this);
+        adapter = new com.example.evolv.adapters.WorkoutTemplateAdapter(new java.util.ArrayList<>(), new com.example.evolv.adapters.WorkoutTemplateAdapter.OnTemplateClickListener() {
+            @Override
+            public void onTemplateClick(long templateId) {
+                Intent intent = new Intent(HomeActivity_FULL_BACKUP.this, com.example.evolv.activities.WorkoutTemplateDetailActivity.class);
+                intent.putExtra("TEMPLATE_ID", templateId);
+                startActivity(intent);
+            }
+            @Override
+            public void onTemplateEdit(long templateId) {
+                Intent intent = new Intent(HomeActivity_FULL_BACKUP.this, com.example.evolv.activities.EditWorkoutTemplateActivity.class);
+                intent.putExtra("templateId", templateId);
+                startActivity(intent);
+            }
+            @Override
+            public void onTemplateDelete(com.example.evolv.models.WorkoutTemplate template) {
+                long userId = getSharedPreferences("EvolvPrefs", MODE_PRIVATE).getLong("userId", 0);
+                boolean isDefault = (template.getUserId() == -1 || template.getUserId() == 0);
+                if (isDefault) {
+                    String key = "hidden_default_templates_user_" + userId;
+                    java.util.Set<String> hiddenSet = getSharedPreferences("EvolvPrefs", MODE_PRIVATE).getStringSet(key, new java.util.HashSet<>());
+                    hiddenSet = new java.util.HashSet<>(hiddenSet);
+                    hiddenSet.add(String.valueOf(template.getTemplateId()));
+                    getSharedPreferences("EvolvPrefs", MODE_PRIVATE).edit().putStringSet(key, hiddenSet).apply();
+                    loadTemplates();
+                } else {
+                    dbHelper.deleteWorkoutTemplateById(template.getTemplateId());
+                    loadTemplates();
+                }
+            }
+        });
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        loadTemplates();
+    }
+    private void logout() {
+        getSharedPreferences("EvolvPrefs", MODE_PRIVATE).edit().clear().apply();
+        Intent intent = new Intent(HomeActivity_FULL_BACKUP.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadTemplates();
+    }
+    private void loadTemplates() {
+        if (dbHelper == null) dbHelper = new DatabaseHelper(this);
+        long userId = getSharedPreferences("EvolvPrefs", MODE_PRIVATE).getLong("userId", 0);
+        String key = "hidden_default_templates_user_" + userId;
+        java.util.Set<String> hiddenSet = getSharedPreferences("EvolvPrefs", MODE_PRIVATE).getStringSet(key, new java.util.HashSet<>());
+        java.util.List<com.example.evolv.models.WorkoutTemplate> allTemplates = dbHelper.getAllWorkoutTemplatesRaw();
+        java.util.List<com.example.evolv.models.WorkoutTemplate> visibles = new java.util.ArrayList<>();
+        for (com.example.evolv.models.WorkoutTemplate tpl : allTemplates) {
+            boolean isDefault = (tpl.getUserId() == -1 || tpl.getUserId() == 0);
+            if (isDefault && hiddenSet.contains(String.valueOf(tpl.getTemplateId()))) {
+                continue;
+            }
+            if (!isDefault && tpl.getUserId() != userId) {
+                continue;
+            }
+            visibles.add(tpl);
+        }
+        adapter.setTemplates(visibles);
+        adapter.notifyDataSetChanged();
+    }
+}

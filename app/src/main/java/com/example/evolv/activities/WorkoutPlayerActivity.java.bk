@@ -20,6 +20,13 @@ import com.example.evolv.R;
 import com.example.evolv.models.Exercise;
 import java.util.ArrayList;
 
+/**
+ * WorkoutPlayerActivity
+ * ---------------------
+ * Esta actividad gestiona la pantalla de reproducción de la rutina de ejercicios.
+ * Controla la visualización de los ejercicios, los descansos, el temporizador y la navegación entre ejercicios.
+ * También maneja la actualización de la interfaz de usuario según el estado (ejercicio, descanso, finalización).
+ */
 public class WorkoutPlayerActivity extends AppCompatActivity {
     private ArrayList<Exercise> exerciseList;
     private int currentIndex = 0;
@@ -39,7 +46,11 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
     private static final int DEFAULT_REST_DURATION = 10000; // 10s descanso
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    /**
+ * Inicializa la actividad, las vistas y obtiene los datos necesarios para la rutina.
+ * Configura la interfaz de usuario y listeners de botones.
+ */
+protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_workout_player);
 
@@ -82,6 +93,7 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
                 if (template != null) {
                     workoutName = template.getName();
                 }
+                dbHelper.close();
             }
         }
         textWorkoutNameIntro.setText(workoutName);
@@ -149,7 +161,11 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
         });
     }
 
-    private void startExercise() {
+    /**
+ * Muestra la información y controles del ejercicio actual.
+ * Actualiza nombre, descripción, imagen y temporizador para el ejercicio en curso.
+ */
+private void startExercise() {
         android.util.Log.d("EvolvDebug", "startExercise() called");
         isRest = false;
         Exercise exercise = exerciseList.get(currentIndex);
@@ -158,7 +174,7 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
         textExerciseDesc.setText(exercise.getDescription_text());
         // Restaurar tamaño de fuente normal para ejercicio
         textExerciseName.setTextSize(24); // sp
-        textExerciseDesc.setTextSize(16); // sp
+        textExerciseDesc.setTextSize(20); // sp
         // Cargar imagen real si existe, si no el placeholder
         if (exercise.getImg_url() != null && !exercise.getImg_url().isEmpty()) {
             String imgUrl = exercise.getImg_url();
@@ -197,7 +213,11 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
         startTimer(DEFAULT_EXERCISE_DURATION);
     }
 
-    private void startRest() {
+    /**
+ * Inicia el periodo de descanso entre ejercicios.
+ * Muestra información del próximo ejercicio y ajusta la interfaz para el descanso.
+ */
+private void startRest() {
         // Si ya estamos en el último ejercicio, no mostrar descanso, ir directo a pantalla de fin
         if (currentIndex + 1 >= exerciseList.size()) {
             finishWorkout();
@@ -218,7 +238,8 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
             textExerciseName.setText(next.getName());
             textExerciseDesc.setText(next.getDescription_text() != null ? next.getDescription_text() : "");
             textExerciseName.setTextSize(24); // sp
-            textExerciseDesc.setTextSize(16); // sp
+            textExerciseDesc.setTextSize(20); // sp
+
             // Imagen igual que en startExercise
             if (next.getImg_url() != null && !next.getImg_url().isEmpty()) {
                 int resId = getResources().getIdentifier(next.getImg_url(), "drawable", getPackageName());
@@ -244,7 +265,12 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
         startTimer(DEFAULT_REST_DURATION);
     }
 
-    private void startTimer(long duration) {
+    /**
+ * Inicia el temporizador para ejercicio o descanso.
+ * Actualiza la UI en cada tick y gestiona el flujo al finalizar el tiempo.
+ * @param duration Duración en milisegundos.
+ */
+private void startTimer(long duration) {
         timer = new CountDownTimer(duration, 100) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -268,7 +294,10 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
         btnPause.setText(R.string.pause);
     }
 
-    private void pauseTimer() {
+    /**
+ * Pausa el temporizador actual y actualiza el estado y el texto del botón.
+ */
+private void pauseTimer() {
         if (timer != null) {
             timer.cancel();
             isPaused = true;
@@ -276,11 +305,18 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void resumeTimer() {
+    /**
+ * Reanuda el temporizador desde el tiempo restante.
+ */
+private void resumeTimer() {
         startTimer(timeLeftMs);
     }
 
-    private void advance() {
+    /**
+ * Avanza al siguiente ejercicio o descanso según el estado actual.
+ * Si termina la rutina, muestra la pantalla de fin.
+ */
+private void advance() {
         if (timer != null) timer.cancel();
         if (isRest) {
             currentIndex++;
@@ -295,7 +331,10 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
     }
 
     // Mostrar pantalla de fin de entrenamiento
-    private void showFinishScreen() {
+    /**
+ * Muestra la pantalla final al terminar la rutina y cierra la actividad tras unos segundos.
+ */
+private void showFinishScreen() {
         findViewById(R.id.cardCentral).setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
         textTimer.setVisibility(View.GONE);
@@ -307,7 +346,10 @@ public class WorkoutPlayerActivity extends AppCompatActivity {
         new android.os.Handler().postDelayed(this::finish, 3000);
     }
 
-    private void finishWorkout() {
+    /**
+ * Finaliza la rutina y muestra la pantalla de cierre.
+ */
+private void finishWorkout() {
         showFinishScreen();
     }
 }

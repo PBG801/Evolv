@@ -1,0 +1,57 @@
+# Plan de Desarrollo MVP: Gestión y Ejecución de Entrenamientos _v2 (Evolv)
+
+## Prioridades y fases
+
+### Fase 1: Estructura de datos y persistencia
+1. Definir y documentar la estructura de la tabla `workout`
+   - Añadir campos para progreso de sesión (ejercicio actual, serie, repetición, etc.) si no existen.
+   - Revisar atomicidad de inserciones y actualizaciones (`actual_start`, `actual_end`, progreso).
+2. Modelos de datos _v2
+   - WorkoutTemplate_v2.java
+   - WorkoutTemplateExercise_v2.java
+   - WorkoutSession_v2.java (si se decide separar la sesión de la tabla workout)
+3. Actualizar/crear métodos en DatabaseHelper.java o DatabaseHelper_v2.java
+   - CRUD para plantillas y sesiones, guardar/reanudar progreso, finalizar sesión.
+
+### Fase 2: UI y lógica de plantillas
+4. EditWorkoutTemplateActivity_v2.java
+   - Crear/editar plantillas, añadir/editar/eliminar/reordenar ejercicios.
+   - Validación y guardado atómico.
+5. Layouts asociados
+   - activity_edit_workout_v2.xml
+   - item_selected_exercise_v2.xml
+   - dialog_select_exercise_v2.xml (si aplica)
+6. Adaptador
+   - WorkoutTemplateExerciseAdapter_v2.java
+
+### Fase 3: Ejecución de entrenamiento (player)
+7. WorkoutPlayerActivity_v2.java
+   - Lógica de ejecución, pausa/reanudación, finalizar.
+   - Gestión de señales auditivas.
+   - Guardar progreso en la sesión (tabla workout).
+8. Layouts asociados
+   - activity_workout_player_v2.xml
+   - Componentes visuales para estado, botones, etc.
+
+### Fase 4: Historial, calendario y estadísticas
+9. Pantalla de calendario/historial
+   - Visualización de sesiones guardadas, posibilidad de reanudar.
+   - Mostrar estado: finalizada o pendiente.
+10. Lógica de estadísticas
+    - Solo contar ejercicios/calorías realizados en sesiones finalizadas o en progreso si no se terminó.
+
+### Fase 5: Limpieza y documentación
+11. Comentarios aclaratorios en todo el código
+    - Explicar lógica clave, atomicidad y decisiones de diseño.
+12. Revisión de atomicidad y claridad
+    - Asegurar que todas las operaciones críticas son atómicas y el código es fácil de seguir.
+13. Eliminar o aislar lógica antigua para evitar confusión
+    - Mantener solo lo esencial para el MVP.
+
+## Notas y recordatorios
+- Todos los archivos y clases nuevos deben llevar el sufijo _v2.
+- El MVP debe ser rápido, ágil y sencillo, pero robusto.
+- Documentar siempre con comentarios claros y útiles.
+- Priorizar la experiencia de usuario y la facilidad de mantenimiento.
+- Validar y limpiar después de cada edición (protocolo obligatorio).
+- Seguir las reglas y protocolos de comportamiento y edición del proyecto.

@@ -69,9 +69,8 @@ public class DatabaseHelperTest {
             dbHelper.insertUser(TEST_EMAIL, TEST_PASSWORD));
 
         // Intentar login
-        String result = dbHelper.checkLogin(TEST_EMAIL, TEST_PASSWORD);
-        assertNotNull("El login debería ser exitoso", result);
-        assertEquals("El email retornado debería coincidir", TEST_EMAIL, result);
+        long userId = dbHelper.checkLogin(TEST_EMAIL, TEST_PASSWORD);
+        assertTrue("El login debería ser exitoso", userId > 0);
     }
 
     @Test
@@ -81,15 +80,15 @@ public class DatabaseHelperTest {
             dbHelper.insertUser(TEST_EMAIL, TEST_PASSWORD));
 
         // Intentar login con contraseña incorrecta
-        String result = dbHelper.checkLogin(TEST_EMAIL, "wrongpassword");
-        assertNull("El login debería fallar con contraseña incorrecta", result);
+        long userId = dbHelper.checkLogin(TEST_EMAIL, "wrongpassword");
+        assertEquals("El login con contraseña incorrecta debe fallar", -1, userId);
     }
 
     @Test
     public void testLoginFailUserNotFound() {
         // Intentar login con usuario que no existe
-        String result = dbHelper.checkLogin("nonexistent@email.com", TEST_PASSWORD);
-        assertNull("El login debería fallar con usuario inexistente", result);
+        long userId = dbHelper.checkLogin("nonexistent@email.com", TEST_PASSWORD);
+        assertEquals("El login con email inexistente debe fallar", -1, userId);
     }
 
     @Test
