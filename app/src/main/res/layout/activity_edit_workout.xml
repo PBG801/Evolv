@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/textDefaultWorkoutLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Entrenamiento por defecto"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:textAlignment="center"
+        android:paddingBottom="4dp" />
+
+    <EditText
+        android:id="@+id/editWorkoutName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_workout_template_name"
+        android:autofillHints="name"
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/labelWorkoutType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_workout_type"
+        android:layout_marginTop="8dp"/>
+
+    <Spinner
+        android:id="@+id/spinnerWorkoutType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"/>
+
+    <TextView
+        android:id="@+id/labelNotes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_notes"
+        android:layout_marginTop="12dp"/>
+
+    <EditText
+        android:id="@+id/editNotes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_notes"
+        android:inputType="textMultiLine"
+        android:minLines="3"
+        android:maxLines="6"
+        android:gravity="top|start"
+        android:layout_marginBottom="8dp"
+        android:autofillHints="notes" />
+
+
+    <!-- Contenedor horizontal para el RecyclerView y las flechas -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <!-- RecyclerView para la lista dinámica de ejercicios -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerExercises"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Flechas para mover el ítem seleccionado -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btnMoveExerciseUp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/arrow_up_float"
+                android:contentDescription="@string/move_up"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginBottom="16dp"/>
+            <ImageButton
+                android:id="@+id/btnMoveExerciseDown"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/arrow_down_float"
+                android:contentDescription="@string/move_down"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnSaveWorkout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/action_save"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:id="@+id/btnDeleteWorkout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/action_delete_workout"
+        android:layout_marginTop="8dp"/>
+
+</LinearLayout>

@@ -1,7 +1,7 @@
 package com.example.evolv;
 
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle; // NECESARIO: Para el ciclo de vida de la Activity
+import androidx.appcompat.app.AppCompatActivity; // NECESARIO: Clase base para la Activity
 
 public class ListUsersActivity extends AppCompatActivity {
     @Override

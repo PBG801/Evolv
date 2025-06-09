@@ -5,7 +5,19 @@
     android:orientation="horizontal"
     android:gravity="center"
     android:padding="8dp"
-    android:background="@color/purple_100">
+    android:background="@color/rest_background">
+
+    <ProgressBar
+        android:id="@+id/progressRestBreath"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="120dp"
+        android:layout_height="8dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/progress_breath_drawable"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="12dp" />
 
     <TextView
         android:id="@+id/textRestDuration"

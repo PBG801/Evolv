@@ -1,11 +1,18 @@
 <resources>
+    <!-- Título del diálogo de edición de ejercicio -->
+    <string name="edit_exercise_values">Editar valores del ejercicio</string> <!-- ÚNICA DEFINICIÓN -->
+    <!-- Botón cancelar -->
+    <string name="cancel">Cancelar</string> <!-- ÚNICA DEFINICIÓN -->
+    <!-- Error de número inválido -->
+    <string name="error_invalid_number">Valor numérico inválido</string> <!-- ÚNICA DEFINICIÓN -->
+
     <string name="app_name">Evolv</string>
     <string name="email">Correo electrónico</string>
     <string name="password">Contraseña</string>
     <string name="login">Iniciar sesión</string>
     <string name="register">Registrarse</string>
     <string name="welcome">Bienvenido</string>
-    <string name="logout">werror sesión</string>
+    <string name="logout">Cerrar sesión</string>
     <string name="confirm_password">Confirmar contraseña</string>
     <string name="anonymous_login">Acceder como anónimo</string>
     <string name="anonymous_user">Usuario anónimo</string>
@@ -20,7 +27,6 @@
     <string name="label_series">Series</string>
     <string name="label_reps">Repeticiones</string>
     <string name="label_execution_time">Tiempo de ejecución (seg)</string>
-    <string name="action_save">Guardar</string>
     <string name="action_cancel">Cancelar</string>
     <!-- Mensajes de error y notificaciones -->
     <string name="error_empty_fields">Por favor complete todos los campos</string>
@@ -42,7 +48,7 @@
     <string name="exercise_name_placeholder">Ejercicio</string>
     <string name="exercise_count_placeholder">Repeticiones: xN</string>
     <string name="exercise_duration_placeholder">Duración: N s</string>
-    <string name="rest_block_placeholder">Descanso entre series: %1$d s</string>
+    <string name="rest_block_placeholder">Descanso entre series: s</string>
     <string name="pause">Pausar</string>
     <string name="next">Siguiente</string>
     <string name="resume">Reanudar</string>
@@ -52,25 +58,82 @@
     <string name="exercise_progress">Ejercicio %1$d de %2$d</string>
     <string name="no_exercises_found">No se encontraron ejercicios</string>
     <string name="workout_complete">¡Entrenamiento terminado!</string>
-    <string name="next_exercise_info">¡Tiempo de Descanso! Prepárate para el próximo ejercicio: %1$s</string>
-    <string name="rest">Descanso</string>
+    <string name="workout_completed">Entrenamiento completado exitosamente</string>
     <string name="exercise_1_name">Flexiones</string>
     <string name="exercise_2_name">Sentadillas</string>
     <string name="exercise_3_name">Plancha</string>
     <string name="exercise_4_name">Burpees</string>
     <string name="exercise_5_name">Abdominales</string>
     <string name="exercise_6_name">Zancadas</string>
-    <string name="exercise_7_name">Dominadas</string>
     <string name="exercise_8_name">Fondos de tríceps</string>
     <string name="exercise_9_name">Mountain climbers</string>
     <string name="exercise_10_name">Jumping jacks</string>
     <string name="exercise_unknown">Ejercicio desconocido</string>
     <string name="workout_name">Nombre del entrenamiento</string>
-    <string name="next_exercise">¡Tiempo de Descanso! Prepárate para el próximo ejercicio!</string>
-    <string name="exercise_label">Ejercicio</string>
+    <string name="edit_workout_title">Editar entrenamiento</string>
+    <string name="new_workout_title">Crear entrenamiento</string>
+    <string name="workout_type">Tipo de entrenamiento</string>
+    <string name="workout_notes_optional">Notas (opcional)</string>
+    <string name="selected_exercises">Ejercicios seleccionados</string>
+    <string name="available_exercises">Ejercicios disponibles</string>
+    <string name="add_exercise">Añadir ejercicio</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Eliminar</string>
+    <string name="search_exercises">Buscar ejercicios...</string>
+    <string name="next_exercise">¡TIEMPO DE DESCANSO! El próximo ejercicio es:</string>
     <string name="sets_reps_duration_label">Sets / Reps / Duración</string>
     <string name="template_label">Plantilla</string>
     <string name="type_label">Tipo</string>
+    <!-- Nuevos campos para plantilla de entrenamiento -->
     <string name="notes_label">Notas</string>
     <string name="number_30">30</string>
+    <string name="template_type_label">Tipo de plantilla</string>
+    <string name="template_notes_label">Notas de la plantilla</string>
+    <string name="exercise_name_label">EJERCICIO</string>
+    <string name="add_template">Añadir plantilla</string>
+    <string name="edit">Editar</string>
+    <string name="move_up">Subir</string>
+    <string name="move_down">Bajar</string>
+    <string name="add_exercise_title">Añadir ejercicio</string>
+    <string name="add_exercise_positive">Añadir</string>
+    <string name="add_exercise_negative">Cancelar</string>
+    <string name="error_complete_name_and_exercises">Completa el nombre y añade ejercicios</string>
+    <string name="template_saved">Plantilla guardada</string>
+    <string name="label_workout_type">Tipo de entrenamiento</string>
+    <!-- Opciones de menú -->
+    <string name="menu_update_expired">Actualizar estados vencidos</string>
+    <string name="menu_calendar">Calendario</string>
+    <string name="update_expired_success">Se han actualizado %1$d entrenamientos vencidos a estado no completado</string>
+    <string name="update_expired_none">No hay entrenamientos vencidos pendientes de actualización</string>
+    <string name="calendar_coming_soon_message">Vista de calendario será implementada próximamente</string>
+    <string name="label_notes">Notas</string>
+    <string name="hint_notes">Escribe aquí tus notas...</string>
+    <string name="hint_workout_template_name">Nombre de la plantilla</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_delete_workout">Eliminar entrenamiento</string>
+    <string name="login_failed">Login fallido</string>
+    <string name="btn_play_description">Iniciar entrenamiento</string>
+    <string name="btn_pause_description">Reanudar entrenamiento pausado</string>
+    <string name="btn_edit_description">Editar plantilla</string>
+    <string name="btn_delete_description">Eliminar plantilla</string>
+    <string name="paused_label">Pausado</string>
+    <string name="default_template_label">Por defecto</string>
+    <string name="start_next_exercise">Siguiente ejercicio</string>
+    <string name="next_exercise_info">Próximo ejercicio</string>
+    <string name="rest">Descanso</string>
+    <string name="toast_user_id">userId: %1$d</string>
+    <string name="dialog_exercise_list_title">Ejercicios del entrenamiento</string>
+    <string name="dialog_no_exercises">Este entrenamiento no tiene ejercicios asignados.</string>
+    <string name="action_add_exercise">Añadir ejercicio</string>
+
+    <string name="edit_exercise">Editar ejercicio</string>
+    <string name="delete_exercise">Eliminar ejercicio</string>
+    
+    <!-- Strings para vista de calendario -->
+    <string name="title_workout_calendar">Calendario de entrenamientos</string>
+    <string name="selected_date">Entrenamientos para: %1$s</string>
+    <string name="no_workouts_for_date">No hay entrenamientos programados para esta fecha</string>
+    <string name="workout_state_pending">PENDIENTE</string>
+    <string name="workout_state_completed">COMPLETADO</string>
+    <string name="workout_state_not_completed">NO COMPLETADO</string>
 </resources>

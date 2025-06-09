@@ -42,5 +42,16 @@
             android:name=".activities.WorkoutPlayerActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.WorkoutPlayerActivity_v2"
+            android:exported="false" />
+
+        <activity android:name=".activities.EditWorkoutTemplateActivity" />
+
+        <activity android:name=".activities.WorkoutTemplateListActivity_v2" android:exported="false" />
+
+        <activity 
+            android:name=".activities.WorkoutCalendarActivity" 
+            android:exported="false" />
     </application>
 </manifest>
