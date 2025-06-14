@@ -39,6 +39,11 @@ public class WorkoutTemplateExercise_v2 implements java.io.Serializable {
         this(exerciseId, name, sets, repetitions, targetDuration, restPeriod, durationType, null, 0, 0);
     }
 
+    // Constructor sin argumentos para crear instancias vacías
+    public WorkoutTemplateExercise_v2() {
+        this(0, "", 0, 0, 0, 0, "", null, 0, 0);
+    }
+
     // Getters y setters
     public long getExerciseId() {
         return exerciseId;

@@ -1,0 +1,210 @@
+    /**
+     * Método para aplicar un color específico a todos los TextViews dentro de un ViewGroup
+     * recursivamente.
+     * 
+     * @param view La vista raíz que contiene los TextViews
+     * @param colorResId El ID del recurso de color a aplicar
+     */
+    private void applyColorToAllTextViews(View view, int colorResId) {
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                applyColorToAllTextViews(child, colorResId);
+            }
+        } else if (view instanceof TextView && !(view instanceof Button)) {
+            ((TextView) view).setTextColor(getResources().getColor(colorResId));
+            Log.d("COLOR", "Color aplicado a TextView: " + ((TextView) view).getText());
+        }
+    }
+
+    /**
+     * Método para aplicar colores específicos a todos los Spinners dentro de un ViewGroup
+     * recursivamente.
+     * 
+     * @param view La vista raíz que contiene los Spinners
+     * @param bgColorResId El ID del recurso de color para el fondo
+     * @param textColorResId El ID del recurso de color para texto
+     */
+    private void applyColorToAllSpinners(View view, int bgColorResId, int textColorResId) {
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                applyColorToAllSpinners(child, bgColorResId, textColorResId);
+                
+                if (child instanceof Spinner) {
+                    Spinner spinner = (Spinner) child;
+                    spinner.setBackgroundColor(getResources().getColor(bgColorResId));
+                    
+                    // Intentar configurar el color del texto del elemento seleccionado
+                    try {
+                        // El spinner debe tener un adapter para modificar su apariencia
+                        ArrayAdapter<?> adapter = (ArrayAdapter<?>) spinner.getAdapter();
+                        if (adapter != null) {
+                            // Obtener los items actuales del adapter para preservarlos
+                            List<Object> items = getItemsFromAdapter(adapter);
+                            
+                            // Crear un nuevo adapter con el estilo personalizado
+                            ArrayAdapter<Object> newAdapter = new ArrayAdapter<Object>(
+                                    this,
+                                    android.R.layout.simple_spinner_item,
+                                    items) {
+                                @Override
+                                public View getView(int position, View convertView, ViewGroup parent) {
+                                    View view = super.getView(position, convertView, parent);
+                                    if (view instanceof TextView) {
+                                        ((TextView) view).setTextColor(getResources().getColor(textColorResId));
+                                    }
+                                    return view;
+                                }
+                                
+                                @Override
+                                public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                                    View view = super.getDropDownView(position, convertView, parent);
+                                    if (view instanceof TextView) {
+                                        ((TextView) view).setTextColor(getResources().getColor(textColorResId));
+                                        view.setBackgroundColor(getResources().getColor(bgColorResId));
+                                    }
+                                    return view;
+                                }
+                            };
+                            
+                            newAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            spinner.setAdapter(newAdapter);
+                            
+                            // Restaurar la selección original
+                            if (adapter.getCount() > 0 && spinner.getSelectedItemPosition() >= 0) {
+                                spinner.setSelection(Math.min(spinner.getSelectedItemPosition(), newAdapter.getCount() - 1));
+                            }
+                            
+                            Log.d("COLOR", "Nuevo adapter aplicado a Spinner con " + items.size() + " elementos");
+                        }
+                    } catch (Exception e) {
+                        Log.e("COLOR", "Error al aplicar colores al Spinner: " + e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Método auxiliar para extraer los elementos de un ArrayAdapter
+     */
+    private List<Object> getItemsFromAdapter(ArrayAdapter<?> adapter) {
+        List<Object> items = new ArrayList<>();
+        for (int i = 0; i < adapter.getCount(); i++) {
+            items.add(adapter.getItem(i));
+        }
+        return items;
+    }
+    
+    /**
+     * Implementación del método de la interfaz OnExerciseEditListener para editar un ejercicio.
+     */
+    @Override
+    public void onExerciseEdit(WorkoutTemplateExercise_v2 item, int position) {
+        android.util.Log.d("EDIT", "[EditWorkoutActivity][onExerciseEdit] Editando ejercicio: " + item.getName() + " (pos=" + position + ")");
+        showEditExerciseDialog(item);
+    }
+    
+    /**
+     * Implementación del método de la interfaz OnExerciseEditListener para eliminar un ejercicio.
+     */
+    @Override
+    public void onExerciseRemove(WorkoutTemplateExercise_v2 item, int position) {
+        android.util.Log.d("EDIT", "[EditWorkoutActivity][onExerciseRemove] Eliminando ejercicio: " + item.getName() + " (pos=" + position + ")");
+        selectedExercises.remove(position);
+        exerciseAdapter.notifyItemRemoved(position);
+    }
+
+    /**
+     * Muestra un diálogo para editar los valores de un ejercicio (series, repeticiones, etc.)
+     * Aplica colores personalizados para modo oscuro directamente.
+     * 
+     * @param item El ejercicio a editar
+     */
+    private void showEditExerciseDialog(WorkoutTemplateExercise_v2 item) {
+        android.util.Log.d("EDIT", "[showEditExerciseDialog] INICIANDO con ejercicio: " + item.getName() + 
+                ", sets=" + item.getSets() + ", reps=" + item.getRepetitions());
+        
+        // Crear vista personalizada para el diálogo
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_exercise_values, null);
+        
+        // Verificar si estamos en modo oscuro para aplicar colores directamente
+        boolean isNightMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+        
+        if (isNightMode) {
+            // Aplicar colores de modo oscuro directamente a la vista
+            dialogView.setBackgroundColor(getResources().getColor(R.color.surface_dark));
+            
+            // Aplicar colores a todos los TextViews contenidos en el layout
+            applyColorToAllTextViews(dialogView, R.color.on_primary);
+            
+            // Aplicar colores a todos los Spinners contenidos en el layout
+            applyColorToAllSpinners(dialogView, R.color.surface_dark, R.color.on_primary);
+            
+            Log.d("EDIT_DIALOG", "Aplicados colores de modo oscuro directamente a la vista");
+        }
+
+        Spinner editSets = dialogView.findViewById(R.id.editSets);
+        Spinner editReps = dialogView.findViewById(R.id.editReps);
+        Spinner editDuration = dialogView.findViewById(R.id.editDuration);
+        Spinner editRest = dialogView.findViewById(R.id.editRest);
+        Log.d("EDIT_DIALOG", "Referencias a spinners obtenidas");
+        
+        // Verificar que los spinners tienen adapter y elementos
+        if (editSets.getAdapter() != null) {
+            Log.d("EDIT_DIALOG", "editSets tiene " + editSets.getAdapter().getCount() + " elementos");
+        } else {
+            Log.e("EDIT_DIALOG", "ERROR: editSets no tiene adapter");
+        }
+        
+        // Inicializar selección de cada spinner según el valor actual del ejercicio (valores de 1 a 30, posición = valor - 1)
+        // Asegurar que los índices están dentro de los límites válidos
+        int setsPos = Math.min(Math.max(0, item.getSets() - 1), (editSets.getAdapter() != null ? editSets.getAdapter().getCount() - 1 : 0));
+        int repsPos = Math.min(Math.max(0, item.getRepetitions() - 1), (editReps.getAdapter() != null ? editReps.getAdapter().getCount() - 1 : 0));
+        int durationPos = Math.min(Math.max(0, item.getTargetDuration() - 1), (editDuration.getAdapter() != null ? editDuration.getAdapter().getCount() - 1 : 0));
+        int restPos = Math.min(Math.max(0, item.getRestPeriod() - 1), (editRest.getAdapter() != null ? editRest.getAdapter().getCount() - 1 : 0));
+        
+        Log.d("EDIT_DIALOG", "Posiciones calculadas: sets=" + setsPos + ", reps=" + repsPos + 
+                ", duration=" + durationPos + ", rest=" + restPos);
+        
+        editSets.setSelection(setsPos);
+        editReps.setSelection(repsPos);
+        editDuration.setSelection(durationPos);
+        editRest.setSelection(restPos);
+        Log.d("EDIT_DIALOG", "Spinners configurados correctamente");
+
+        // Determinar si estamos en modo oscuro para aplicar el tema correcto
+        int dialogTheme = isNightMode 
+                ? R.style.ThemeOverlay_Evolv_Dialog_Night
+                : com.google.android.material.R.style.ThemeOverlay_Material3_Dialog_Alert;
+                
+        // Crear y mostrar el diálogo con el tema adecuado
+        new AlertDialog.Builder(this, dialogTheme)
+                .setTitle(item.getName())
+                .setView(dialogView)
+                .setPositiveButton("Guardar", (dialog, which) -> {
+                    // Obtener valores seleccionados
+                    int sets = Integer.parseInt(editSets.getSelectedItem().toString());
+                    int reps = Integer.parseInt(editReps.getSelectedItem().toString());
+                    int duration = Integer.parseInt(editDuration.getSelectedItem().toString());
+                    int rest = Integer.parseInt(editRest.getSelectedItem().toString());
+                    
+                    // Actualizar el objeto ejercicio
+                    item.setSets(sets);
+                    item.setRepetitions(reps);
+                    item.setTargetDuration(duration);
+                    item.setRestPeriod(rest);
+                    
+                    // Notificar cambios al adapter
+                    exerciseAdapter.notifyDataSetChanged();
+                    
+                    android.util.Log.d("EDIT", "[showEditExerciseDialog] Guardados cambios: sets=" + sets + 
+                            ", reps=" + reps + ", duration=" + duration + ", rest=" + rest);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }

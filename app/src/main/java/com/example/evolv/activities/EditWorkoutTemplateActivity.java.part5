@@ -1,0 +1,102 @@
+    /**
+     * Muestra un diálogo para seleccionar ejercicios a agregar a la plantilla.
+     * Permite filtrar por equipamiento necesario y tipo de ejercicio.
+     */
+    private void showExerciseSelectionDialog() {
+        android.util.Log.d("EXER", "[showExerciseSelectionDialog] Mostrando diálogo de selección de ejercicios con " + allExercises.size() + " ejercicios disponibles");
+        
+        // Obtener ejercicios que ya están seleccionados para excluirlos
+        Set<Long> selectedExerciseIds = new HashSet<>();
+        for (WorkoutTemplateExercise_v2 wte : selectedExercises) {
+            selectedExerciseIds.add(wte.getExerciseId());
+            android.util.Log.d("EXER", "[showExerciseSelectionDialog] Ejercicio ya seleccionado ID: " + wte.getExerciseId() + " - " + wte.getName());
+        }
+        
+        // Filtrar lista para excluir ejercicios ya seleccionados
+        List<com.example.evolv.models.Exercise> availableExercises = new ArrayList<>();
+        for (com.example.evolv.models.Exercise exercise : allExercises) {
+            if (!selectedExerciseIds.contains(exercise.getId())) {
+                availableExercises.add(exercise);
+                android.util.Log.d("EXER", "[showExerciseSelectionDialog] Ejercicio disponible: " + exercise.getName());
+            }
+        }
+        
+        if (availableExercises.isEmpty()) {
+            //Toast.makeText(this, "No hay ejercicios adicionales disponibles", Toast.LENGTH_SHORT).show();
+            android.util.Log.d("EXER", "[showExerciseSelectionDialog] No hay ejercicios disponibles para agregar");
+            return;
+        }
+        
+        // Array para almacenar cuáles ejercicios están marcados
+        boolean[] checkedItems = new boolean[availableExercises.size()];
+        Arrays.fill(checkedItems, false);
+        
+        // Lista para almacenar nombres de ejercicios para mostrar en el diálogo
+        String[] exerciseNames = new String[availableExercises.size()];
+        for (int i = 0; i < availableExercises.size(); i++) {
+            exerciseNames[i] = availableExercises.get(i).getName();
+        }
+        
+        // Crear vista personalizada con los checkboxes
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_select_exercises, null);
+        
+        // Verificar si estamos en modo oscuro para aplicar colores directamente
+        boolean isNightMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+        
+        if (isNightMode) {
+            // Aplicar colores de modo oscuro directamente a la vista
+            dialogView.setBackgroundColor(getResources().getColor(R.color.surface_dark));
+            
+            // Aplicar colores a todos los TextViews contenidos en el layout
+            applyColorToAllTextViews(dialogView, R.color.on_primary);
+            
+            Log.d("EXERCISE_DIALOG", "Aplicados colores de modo oscuro directamente a la vista");
+        }
+        
+        // Determinar el tema adecuado según el modo
+        int dialogTheme = isNightMode 
+                ? R.style.ThemeOverlay_Evolv_Dialog_Night
+                : com.google.android.material.R.style.ThemeOverlay_Material3_Dialog_Alert;
+        
+        // Crear y mostrar diálogo multichoice
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, dialogTheme);
+        builder.setTitle("Seleccionar ejercicios");
+        builder.setMultiChoiceItems(exerciseNames, checkedItems, (dialog, which, isChecked) -> {
+            checkedItems[which] = isChecked;
+            android.util.Log.d("EXER", "[showExerciseSelectionDialog] Seleccionado: " + exerciseNames[which] + " - " + isChecked);
+        });
+        
+        // Botón para agregar los ejercicios seleccionados
+        builder.setPositiveButton("Agregar", (dialog, which) -> {
+            int addedCount = 0;
+            for (int i = 0; i < checkedItems.length; i++) {
+                if (checkedItems[i]) {
+                    com.example.evolv.models.Exercise selectedExercise = availableExercises.get(i);
+                    WorkoutTemplateExercise_v2 wte = new WorkoutTemplateExercise_v2();
+                    wte.setExerciseId(selectedExercise.getId());
+                    wte.setName(selectedExercise.getName());
+                    wte.setSets(3); // Valores por defecto
+                    wte.setRepetitions(10);
+                    wte.setTargetDuration(0);
+                    wte.setRestPeriod(30);
+                    selectedExercises.add(wte);
+                    addedCount++;
+                    android.util.Log.d("EXER", "[showExerciseSelectionDialog] Agregado: " + selectedExercise.getName());
+                }
+            }
+            
+            if (addedCount > 0) {
+                exerciseAdapter.notifyDataSetChanged();
+                android.util.Log.d("EXER", "[showExerciseSelectionDialog] Se agregaron " + addedCount + " ejercicios");
+                //Toast.makeText(this, "Se agregaron " + addedCount + " ejercicios", Toast.LENGTH_SHORT).show();
+            } else {
+                android.util.Log.d("EXER", "[showExerciseSelectionDialog] No se agregaron ejercicios");
+                //Toast.makeText(this, "No se agregaron ejercicios", Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        builder.setNegativeButton("Cancelar", null);
+        builder.show();
+    }
+}

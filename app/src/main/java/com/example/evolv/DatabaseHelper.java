@@ -14,6 +14,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.FileOutputStream;
+import com.example.evolv.models.WorkoutTemplate_v2;
+import com.example.evolv.models.WorkoutTemplateExercise_v2;
 
 public class DatabaseHelper extends SQLiteOpenHelper implements AutoCloseable {
     private static final String DATABASE_NAME = "evolv.db";
@@ -228,16 +230,137 @@ public class DatabaseHelper extends SQLiteOpenHelper implements AutoCloseable {
 
 
     /**
+     * Comprueba si ya existe una plantilla de entrenamiento con el nombre proporcionado para un usuario específico.
+     * @param name Nombre de la plantilla a comprobar
+     * @param userId ID del usuario propietario de la plantilla
+     * @return true si ya existe una plantilla con ese nombre para el usuario, false en caso contrario
+     */
+    public boolean existsWorkoutTemplate_v2Name(String name, long userId) {
+        android.util.Log.d("SAVE", "[DatabaseHelper] Verificando si existe un entrenamiento con nombre=\"" + name + "\" para userId=" + userId);
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT 1, template_id FROM " + TABLE_WORKOUT_TEMPLATE + 
+                      " WHERE " + COL_TEMPLATE_NAME + " = ? AND " + 
+                      COL_USER_ID + " = ? LIMIT 1", 
+                      new String[]{name, String.valueOf(userId)});
+        boolean exists = (cursor != null && cursor.moveToFirst());
+        
+        if (exists && cursor != null) {
+            long templateId = cursor.getLong(1);
+            android.util.Log.d("SAVE", "[DatabaseHelper] ENCONTRADO: entrenamiento con nombre=\"" + name + "\", userId=" + userId + ", templateId=" + templateId);
+        } else {
+            android.util.Log.d("SAVE", "[DatabaseHelper] NO ENCONTRADO: ningún entrenamiento con nombre=\"" + name + "\" para userId=" + userId);
+        }
+        
+        if (cursor != null) cursor.close();
+        return exists;
+    }
+    
+    /**
      * Comprueba si ya existe una plantilla de entrenamiento con el nombre proporcionado.
+     * Método de compatibilidad con versiones anteriores.
      * @param name Nombre de la plantilla a comprobar
      * @return true si ya existe una plantilla con ese nombre, false en caso contrario
+     * @deprecated Use existsWorkoutTemplate_v2Name(name, userId) en su lugar
      */
+    @Deprecated
     public boolean existsWorkoutTemplate_v2Name(String name) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT 1 FROM " + TABLE_WORKOUT_TEMPLATE + " WHERE " + COL_TEMPLATE_NAME + " = ? LIMIT 1", new String[]{name});
         boolean exists = (cursor != null && cursor.moveToFirst());
         if (cursor != null) cursor.close();
         return exists;
+    }
+    
+    /**
+     * Comprueba si ya existe una plantilla de entrenamiento con el nombre proporcionado para un usuario específico, 
+     * excluyendo el ID especificado (útil para edición de plantillas existentes).
+     * @param name Nombre de la plantilla a comprobar
+     * @param excludeId ID de la plantilla que debe ser excluida de la comprobación
+     * @param userId ID del usuario propietario de la plantilla
+     * @return true si ya existe otra plantilla con ese nombre para el usuario, false en caso contrario
+     */
+    public boolean existsWorkoutTemplate_v2NameExcludingId(String name, long excludeId, long userId) {
+        android.util.Log.d("SAVE", "[DatabaseHelper] Verificando si existe un entrenamiento con nombre=\"" + name + "\", userId=" + userId + ", excluyendo templateId=" + excludeId);
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT 1, template_id FROM " + TABLE_WORKOUT_TEMPLATE + 
+                         " WHERE " + COL_TEMPLATE_NAME + " = ? AND " + 
+                         COL_TEMPLATE_ID + " != ? AND " +
+                         COL_USER_ID + " = ? LIMIT 1", 
+                         new String[]{name, String.valueOf(excludeId), String.valueOf(userId)});
+        boolean exists = (cursor != null && cursor.moveToFirst());
+        
+        if (exists && cursor != null) {
+            long foundTemplateId = cursor.getLong(1);
+            android.util.Log.d("SAVE", "[DatabaseHelper] ENCONTRADO: otro entrenamiento con nombre=\"" + name + "\", userId=" + userId + ", templateId=" + foundTemplateId + " (diferente del excluido " + excludeId + ")");
+        } else {
+            android.util.Log.d("SAVE", "[DatabaseHelper] NO ENCONTRADO: ningún otro entrenamiento con nombre=\"" + name + "\", userId=" + userId + " (excluyendo templateId=" + excludeId + ")");
+        }
+        
+        if (cursor != null) cursor.close();
+        return exists;
+    }
+    
+    /**
+     * Comprueba si ya existe una plantilla de entrenamiento con el nombre proporcionado, 
+     * excluyendo el ID especificado (útil para edición de plantillas existentes).
+     * Método de compatibilidad con versiones anteriores.
+     * @param name Nombre de la plantilla a comprobar
+     * @param excludeId ID de la plantilla que debe ser excluida de la comprobación
+     * @return true si ya existe otra plantilla con ese nombre, false en caso contrario
+     * @deprecated Use existsWorkoutTemplate_v2NameExcludingId(name, excludeId, userId) en su lugar
+     */
+    @Deprecated
+    public boolean existsWorkoutTemplate_v2NameExcludingId(String name, long excludeId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT 1 FROM " + TABLE_WORKOUT_TEMPLATE + 
+                         " WHERE " + COL_TEMPLATE_NAME + " = ? AND " + 
+                         COL_TEMPLATE_ID + " != ? LIMIT 1", 
+                         new String[]{name, String.valueOf(excludeId)});
+        boolean exists = (cursor != null && cursor.moveToFirst());
+        if (cursor != null) cursor.close();
+        return exists;
+    }
+    
+    /**
+     * Obtiene una plantilla de entrenamiento por su nombre y ID de usuario.
+     * @param name Nombre de la plantilla a buscar
+     * @param userId ID del usuario propietario de la plantilla
+     * @return WorkoutTemplate_v2 si existe, null si no se encuentra
+     */
+    public WorkoutTemplate_v2 getWorkoutTemplateByNameAndUserId(String name, long userId) {
+        android.util.Log.d("SAVE", "[DatabaseHelper] Buscando entrenamiento con nombre=\"" + name + "\" para userId=" + userId);
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        Cursor cursor = db.rawQuery(
+            "SELECT template_id, name, workout_type, notes, user_id FROM " + 
+            TABLE_WORKOUT_TEMPLATE + 
+            " WHERE " + COL_TEMPLATE_NAME + " = ? AND " +
+            COL_USER_ID + " = ? LIMIT 1",
+            new String[]{name, String.valueOf(userId)});
+        
+        WorkoutTemplate_v2 template = null;
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            long templateId = cursor.getLong(0);
+            String templateName = cursor.getString(1);
+            String workoutType = cursor.getString(2);
+            String notes = cursor.getString(3);
+            int userIdFromDb = cursor.getInt(4);
+            
+            android.util.Log.d("SAVE", "[DatabaseHelper] ENCONTRADO: entrenamiento con nombre=\"" + templateName + "\", userId=" + userIdFromDb + ", templateId=" + templateId);
+            
+            // Obtener ejercicios asociados
+            List<WorkoutTemplateExercise_v2> exercises = getExercisesForTemplate(templateId);
+            android.util.Log.d("SAVE", "[DatabaseHelper] Entrenamiento tiene " + exercises.size() + " ejercicios asociados");
+            
+            template = new WorkoutTemplate_v2(
+                templateId, templateName, workoutType, notes, userIdFromDb, exercises);
+        } else {
+            android.util.Log.d("SAVE", "[DatabaseHelper] NO ENCONTRADO: ningún entrenamiento con nombre=\"" + name + "\" para userId=" + userId);
+        }
+        
+        if (cursor != null) cursor.close();
+        return template;
     }
     
     /**
@@ -572,34 +695,58 @@ private void copyDatabaseIfNeeded() throws IOException {
                 int restPeriod = cursor.getInt(cursor.getColumnIndexOrThrow(COL_REST_PERIOD));
                 int restPeriodSeries = cursor.getInt(cursor.getColumnIndexOrThrow(COL_REST_PERIOD_SERIES));
                 String durationType = cursor.getString(cursor.getColumnIndexOrThrow(COL_DURATION_TYPE));
+                
                 // Objeto Exercise asociado
                 String name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME));
                 String imgUrl = cursor.getString(cursor.getColumnIndexOrThrow(COL_IMG_URL));
                 String desc = cursor.getString(cursor.getColumnIndexOrThrow(COL_DESCRIPTION_TEXT));
                 String createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COL_CREATED_AT_EXERCISE));
+                
+                // Normalizar valores según los nuevos estándares predeterminados
+                // Sets: mínimo 1
+                // Repeticiones: valor predeterminado 3
+                // TargetDuration: valor predeterminado 10 segundos
+                // RestPeriod: valor predeterminado 10 segundos
+                int normalizedSets = Math.max(1, sets);
+                int normalizedRepetitions = (repetitions <= 0 || repetitions > 30) ? 3 : repetitions;
+                int normalizedDuration = (targetDuration <= 0 || targetDuration > 30) ? 10 : targetDuration;
+                int normalizedRestPeriod = (restPeriod <= 0 || restPeriod > 30) ? 10 : restPeriod;
+                
+                // Registrar normalización si hubo cambios
+                if (sets != normalizedSets || repetitions != normalizedRepetitions ||
+                    targetDuration != normalizedDuration || restPeriod != normalizedRestPeriod) {
+                    Log.d("EvolvDebug", "[getExercisesForTemplate] Valores normalizados para '" + name + "': " +
+                            "sets: " + sets + "→" + normalizedSets + ", " +
+                            "reps: " + repetitions + "→" + normalizedRepetitions + ", " +
+                            "duration: " + targetDuration + "→" + normalizedDuration + ", " +
+                            "rest: " + restPeriod + "→" + normalizedRestPeriod);
+                }
+                
+                // Crear el objeto Exercise
                 com.example.evolv.models.Exercise exercise = new com.example.evolv.models.Exercise(exerciseId, name, imgUrl, desc, createdAt);
+                
+                // Crear y añadir el objeto WorkoutTemplateExercise_v2 con valores normalizados
                 list.add(new com.example.evolv.models.WorkoutTemplateExercise_v2(
-    exerciseId,
-    exercise.getName(),
-    sets,
-    repetitions,
-    targetDuration,
-    restPeriod,
-    durationType,
-    exercise.getImg_url() // Usa el campo img_url si está disponible
-));
+                    exerciseId,
+                    exercise.getName(),
+                    normalizedSets,
+                    normalizedRepetitions,
+                    normalizedDuration,
+                    normalizedRestPeriod,
+                    durationType,
+                    exercise.getImg_url() // Usa el campo img_url si está disponible
+                ));
             }
             cursor.close();
         }
-        android.util.Log.d("EvolvDebug", "[getExercisesForTemplate] templateId=" + templateId + " -> ejercicios recuperados: " + list.size());
+        
+        // Registrar resumen de ejercicios recuperados
+        Log.d("EvolvDebug", "[getExercisesForTemplate] templateId=" + templateId + " -> ejercicios recuperados: " + list.size());
         for (com.example.evolv.models.WorkoutTemplateExercise_v2 wte : list) {
-            android.util.Log.d("EvolvDebug", "[getExercisesForTemplate] exerciseId=" + wte.getExerciseId() + ", order=" + 0);
+            Log.d("EvolvDebug", "[getExercisesForTemplate] exerciseId=" + wte.getExerciseId() + ", sets=" + wte.getSets() + ", reps=" + wte.getRepetitions() + ", duration=" + wte.getTargetDuration() + ", rest=" + wte.getRestPeriod());
         }
-        Log.d("EvolvDebug", "[REP][DB] Ejercicios recuperados: " + list.size()); // REP
-    for (com.example.evolv.models.WorkoutTemplateExercise_v2 wte : list) {
-        Log.d("EvolvDebug", "[REP][DB] " + wte.getName() + " / " + wte.getImg_url()); // REP
-    }
-    return list;
+        
+        return list;
     }
     /**
      * Reemplaza todos los ejercicios asociados a una plantilla de entrenamiento por una nueva lista.

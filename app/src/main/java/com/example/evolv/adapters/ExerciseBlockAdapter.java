@@ -82,7 +82,7 @@ public class ExerciseBlockAdapter extends RecyclerView.Adapter<RecyclerView.View
             vh.imageExercise.setImageResource(R.drawable.ic_exercise_placeholder);
         } else if (item.type == TYPE_REST) {
             RestViewHolder vh = (RestViewHolder) holder;
-            vh.textRest.setText(holder.itemView.getContext().getString(R.string.rest_block_placeholder, item.restDuration));
+            vh.textRest.setText(holder.itemView.getContext().getString(R.string.rest_block_placeholder));
         }
     }
 

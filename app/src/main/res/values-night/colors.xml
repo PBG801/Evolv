@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores base para modo oscuro -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Colores primarios para modo oscuro -->
+    <color name="purple_primary">#8B7AB0</color>
+    <color name="purple_light">#A494C7</color>
+    <color name="purple_dark">#645195</color>
+
+    <!-- Colores secundarios para modo oscuro -->
+    <color name="purple_secondary">#7C6BA1</color>
+    <color name="purple_secondary_light">#A494C7</color>
+    <color name="purple_secondary_dark">#5A4B78</color>
+
+    <!-- Colores de superficie para modo oscuro -->
+    <color name="surface_light">#645195</color> <!-- Fondo violeta -->
+    <color name="surface_variant">#7C6BA1</color> <!-- Fondo violeta variante -->
+    <color name="surface_dark">#4A3A70</color> <!-- Fondo violeta oscuro -->
+    <color name="background">#4A3A70</color> <!-- Fondo violeta oscuro -->
+
+    <!-- Colores on (para texto y iconos) en modo oscuro -->
+    <color name="on_primary">#FFEB3B</color> <!-- Texto amarillo -->
+    <color name="on_secondary">#FFEB3B</color> <!-- Texto amarillo -->
+    <color name="on_surface_light">#FFEB3B</color> <!-- Texto amarillo -->
+    <color name="on_surface_dark">#FFEB3B</color> <!-- Texto amarillo -->
+
+    <!-- Colores diferenciadores para pantallas -->
+    <color name="exercise_background">#5A4B78</color>
+    <color name="rest_background">#4A3A70</color>
+    <color name="defaultWorkoutBackground">#645195</color>
+    <color name="selected_item_background">#7C6BA1</color>
+    <color name="template_default_bg">#512DA8</color>
+    <color name="template_paused_bg">#5A4B78</color>
+    <color name="template_normal_bg">#4A3A70</color>
+</resources>

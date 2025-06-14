@@ -11,8 +11,8 @@ public class WorkoutExerciseItem {
         this.exerciseId = exerciseId;
         this.sets = 1;
         this.reps = 10;
-        this.duration = 30;
-        this.rest = 30;
+        this.duration = 10;
+        this.rest = 10;
     }
 
     // Getters y setters

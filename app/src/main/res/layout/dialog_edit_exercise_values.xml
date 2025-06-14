@@ -3,57 +3,75 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="20dp"
+    android:background="?attr/colorSurface">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/label_series">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editSets"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
+        android:orientation="vertical">
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/label_reps"
-        android:layout_marginTop="12dp">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editReps"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
+        android:text="@string/label_series"
+        android:textAppearance="?attr/textAppearanceBody1"
+        style="@style/Widget.Evolv.TextView.Night" />
+    <Spinner
+        android:id="@+id/editSets"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/label_execution_time"
-        android:layout_marginTop="12dp">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editDuration"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
+        android:entries="@array/numeric_1_30"
+        android:textAlignment="center"
+        android:theme="@style/SpinnerTheme" 
+        style="@style/Widget.Evolv.Spinner.Night" />
+</LinearLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/rest_block_placeholder"
-        android:layout_marginTop="12dp">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editRest"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/label_reps"
+    android:layout_marginTop="12dp"
+    android:textAppearance="?attr/textAppearanceBody1"
+    style="@style/Widget.Evolv.TextView.Night" />
+<Spinner
+    android:id="@+id/editReps"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:entries="@array/numeric_1_30"
+    android:textAlignment="center"
+    android:theme="@style/SpinnerTheme"
+    style="@style/Widget.Evolv.Spinner.Night" />
+
+    <TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/label_execution_time"
+    android:layout_marginTop="12dp"
+    android:textAppearance="?attr/textAppearanceBody1"
+    style="@style/Widget.Evolv.TextView.Night" />
+<Spinner
+    android:id="@+id/editDuration"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:entries="@array/numeric_1_30"
+    android:textAlignment="center"
+    android:theme="@style/SpinnerTheme"
+    style="@style/Widget.Evolv.Spinner.Night" />
+
+    <TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/rest_block_placeholder"
+    android:layout_marginTop="12dp"
+    android:textAppearance="?attr/textAppearanceBody1"
+    style="@style/Widget.Evolv.TextView.Night" />
+<Spinner
+    android:id="@+id/editRest"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:entries="@array/numeric_1_30"
+    android:textAlignment="center"
+    android:theme="@style/SpinnerTheme"
+    style="@style/Widget.Evolv.Spinner.Night" />
 
 </LinearLayout>

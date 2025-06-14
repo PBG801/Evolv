@@ -28,7 +28,7 @@
     <string name="error_invalid_credentials">Usuario o contraseña incorrectos</string>
     <string name="calendar_coming_soon">Calendario - Próximamente</string>
     <string name="welcome_user">Bienvenido, %1$s!</string>
-    <string name="rest_block_placeholder">Descanso entre series: %1$d s</string>
+
     <string name="title_workout_templates">Plantillas de entrenamiento</string>
     <string name="title_template_detail">Detalle de plantilla</string>
     <string name="exercise_image_desc">Imagen del ejercicio</string>

@@ -20,6 +20,7 @@ import com.example.evolv.R;
 import com.example.evolv.adapters.WorkoutTemplateListAdapter_v2;
 import com.example.evolv.models.WorkoutTemplate_v2;
 import com.example.evolv.models.WorkoutTemplateExercise_v2;
+import com.example.evolv.utils.EnhancedSoundManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import android.content.Intent;
@@ -101,7 +102,7 @@ public class WorkoutTemplateListActivity_v2 extends AppCompatActivity {
         loadAndShowTemplates();
 
         // Mostrar siempre el userId al entrar en esta pantalla
-        Toast.makeText(this, "UserId: " + currentUserId, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "UserId: " + currentUserId, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -117,40 +118,41 @@ public class WorkoutTemplateListActivity_v2 extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflar el menú de opciones desde XML
         getMenuInflater().inflate(R.menu.menu_workout_template_list, menu);
+        Log.d(TAG, "SOUND: onCreateOptionsMenu - Menú inflado");
         return true;
+    }
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Este método se llama cada vez que se muestra el menú
+        // después de una llamada a invalidateOptionsMenu()
+        Log.d(TAG, "SOUND: onPrepareOptionsMenu - Actualizando menú");
+        
+        // Actualizar el icono según el estado del sonido
+        updateSoundIcon(menu);
+        
+        return super.onPrepareOptionsMenu(menu);
     }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Manejar clics en las opciones del menú
         int id = item.getItemId();
-        Log.d(TAG, "CAL: onOptionsItemSelected - itemId: " + id);
+        Log.d(TAG, "SOUND: onOptionsItemSelected - itemId: " + id);
         
-        if (id == R.id.action_calendar) {
-            // Navegar a la actividad de calendario y pasar el userId
-            Log.d(TAG, "CAL: Iniciando actividad de calendario con userId: " + currentUserId);
+        if (id == R.id.action_sound_settings) {
+            // Navegar a la pantalla de configuración de sonidos
             try {
-                Intent calendarIntent = new Intent(this, WorkoutCalendarActivity.class);
-                calendarIntent.putExtra("userId", currentUserId);
-                Log.d(TAG, "CAL: Intent creado correctamente");
-                startActivity(calendarIntent);
-                Log.d(TAG, "CAL: startActivity ejecutado");
+                Intent soundSettingsIntent = new Intent(this, SoundSettingsActivity.class);
+                // Pasar el userId actual para mantener consistencia con el sistema de sonido
+                soundSettingsIntent.putExtra("USER_ID", currentUserId);
+                Log.d(TAG, "SOUND: Intent creado con userId: " + currentUserId);
+                startActivity(soundSettingsIntent);
+                Log.d(TAG, "SOUND: startActivity ejecutado");
                 return true;
             } catch (Exception e) {
-                Log.e(TAG, "CAL: Error al iniciar calendario: " + e.getMessage(), e);
-                Toast.makeText(this, "Error al abrir calendario: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                return true;
-            }
-        }
-        else if (id == R.id.action_update_expired) {
-            Log.d(TAG, "CAL: Actualizando estados vencidos");
-            try {
-                updateExpiredWorkouts();
-                Log.d(TAG, "CAL: Estados vencidos actualizados correctamente");
-                return true;
-            } catch (Exception e) {
-                Log.e(TAG, "CAL: Error al actualizar estados: " + e.getMessage(), e);
-                Toast.makeText(this, "Error al actualizar estados: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Log.e(TAG, "SOUND: Error al abrir configuración de sonido: " + e.getMessage(), e);
+                //Toast.makeText(this, "Error al abrir configuración de sonido: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 return true;
             }
         }
@@ -159,8 +161,35 @@ public class WorkoutTemplateListActivity_v2 extends AppCompatActivity {
     }
     
     /**
-     * Actualiza el estado de los entrenamientos vencidos y muestra el resultado al usuario
+     * Actualiza el icono de sonido según la configuración actual
+     * @param menu El menú donde se encuentra el ítem de sonido
      */
+    private void updateSoundIcon(Menu menu) {
+        if (menu != null) {
+            MenuItem soundItem = menu.findItem(R.id.action_sound_settings);
+            if (soundItem != null) {
+                // Crear una instancia temporal de EnhancedSoundManager para consultar el estado
+                EnhancedSoundManager soundManager = new EnhancedSoundManager(this, (int)currentUserId);
+                boolean soundEnabled = soundManager.isSoundEnabled();
+                
+                Log.d(TAG, "SOUND: updateSoundIcon - Estado actual: " + (soundEnabled ? "ACTIVADO" : "DESACTIVADO"));
+                
+                // Cambiar el icono según el estado
+                if (soundEnabled) {
+                    Log.d(TAG, "SOUND: Estableciendo icono volume_up");
+                    soundItem.setIcon(R.drawable.volume_up);
+                } else {
+                    Log.d(TAG, "SOUND: Estableciendo icono volume_mute");
+                    soundItem.setIcon(R.drawable.volume_mute);
+                }
+            } else {
+                Log.e(TAG, "SOUND: No se encontró el ítem de menú action_sound_settings");
+            }
+        } else {
+            Log.e(TAG, "SOUND: El menú es nulo, no se puede actualizar el icono");
+        }
+    }
+    
     private void updateExpiredWorkouts() {
         Log.d(TAG, "CAL: Método updateExpiredWorkouts iniciado");
         int updatedCount = dbHelper.updateExpiredWorkouts();
@@ -174,7 +203,7 @@ public class WorkoutTemplateListActivity_v2 extends AppCompatActivity {
         }
         
         // Mostrar resultado al usuario
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         
         // Registrar en log para diagnóstico
         Log.d("EvolvDebug", "[UPDATE_EXPIRED] Entrenamientos actualizados: " + updatedCount);
@@ -206,6 +235,9 @@ public class WorkoutTemplateListActivity_v2 extends AppCompatActivity {
         if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
+        
+        // Actualizar el icono de sonido cuando volvemos a la actividad
+        invalidateOptionsMenu();
     }
 
     /**
@@ -252,8 +284,8 @@ public class WorkoutTemplateListActivity_v2 extends AppCompatActivity {
                             String imgUrl = c2.getString(7); // Nuevo campo
                             if (sets < 1) sets = 1;
                             if (reps < 1) reps = 10;
-                            if (duration < 0) duration = 30;
-                            if (rest < 0) rest = 30;
+                            if (duration < 0) duration = 10;
+                            if (rest < 0) rest = 10;
                             if (durationType == null) durationType = "";
                             exercises.add(new com.example.evolv.models.WorkoutTemplateExercise_v2(exerciseId, exerciseName, sets, reps, duration, rest, durationType, imgUrl // Añadido imgUrl
                             ));
@@ -356,9 +388,9 @@ public void onDelete(WorkoutTemplate_v2 template) {
             if (rows > 0) {
                 templates.remove(template);
                 adapter.notifyDataSetChanged();
-                Toast.makeText(WorkoutTemplateListActivity_v2.this, "Plantilla eliminada correctamente.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(WorkoutTemplateListActivity_v2.this, "Plantilla eliminada correctamente.", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(WorkoutTemplateListActivity_v2.this, "No se pudo eliminar la plantilla (no corresponde al usuario actual).", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(WorkoutTemplateListActivity_v2.this, "No se pudo eliminar la plantilla (no corresponde al usuario actual).", Toast.LENGTH_SHORT).show();
             }
             loadAndShowTemplates();
         })

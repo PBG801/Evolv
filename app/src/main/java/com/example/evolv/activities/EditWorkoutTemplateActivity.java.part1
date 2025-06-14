@@ -1,0 +1,56 @@
+package com.example.evolv.activities;
+
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.evolv.DatabaseHelper;
+import com.example.evolv.R;
+import com.example.evolv.adapters.WorkoutTemplateExerciseAdapter;
+import com.example.evolv.models.WorkoutTemplateExercise_v2;
+import com.example.evolv.models.WorkoutTemplate_v2;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+
+public class EditWorkoutTemplateActivity extends AppCompatActivity implements WorkoutTemplateExerciseAdapter.OnExerciseEditListener {
+
+    // Campo de texto para el nombre de la plantilla de entrenamiento
+    private EditText editWorkoutName;
+    // Spinner para el tipo de entrenamiento
+    private android.widget.Spinner spinnerWorkoutType;
+    // Campo de texto para notas
+    private EditText editNotes; // Nuevo campo para notas
+    // Lista de todos los ejercicios disponibles que se pueden agregar a la plantilla
+    private List<com.example.evolv.models.Exercise> allExercises = new ArrayList<>();
+    // Lista de ejercicios seleccionados por el usuario para la plantilla actual (con valores editables)
+    private final List<WorkoutTemplateExercise_v2> selectedExercises = new ArrayList<>();
+    // Acceso a la base de datos de la aplicación
+    private DatabaseHelper dbHelper;
+    // Adapter para la lista de ejercicios
+    private WorkoutTemplateExerciseAdapter exerciseAdapter;
+    // Identificador de la plantilla que se está editando (null si es nueva)
+    private Long templateId;
+    // Identificador del usuario actual
+    private int currentUserId;

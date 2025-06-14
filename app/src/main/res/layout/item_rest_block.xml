@@ -5,7 +5,7 @@
     android:orientation="horizontal"
     android:gravity="center"
     android:padding="8dp"
-    android:background="@color/rest_background">
+    android:background="?attr/colorSurfaceVariant">
 
     <ProgressBar
         android:id="@+id/progressRestBreath"
@@ -25,5 +25,5 @@
         android:layout_height="wrap_content"
         android:text="@string/rest_block_placeholder"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:textColor="@color/purple_700" />
+        android:textColor="?attr/colorPrimary" />
 </LinearLayout>

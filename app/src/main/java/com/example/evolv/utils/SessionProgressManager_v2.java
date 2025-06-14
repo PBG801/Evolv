@@ -79,15 +79,15 @@ public class SessionProgressManager_v2 {
         SharedPreferences prefs = context.getSharedPreferences(PAUSED_SESSIONS_PREFS, Context.MODE_PRIVATE);
         String key = getPausedKey(userId, templateId);
         
-        Log.d("EvolvDebug", "[PAUSE] SessionProgressManager_v2.setPausedState: userId=" + userId + 
-              ", templateId=" + templateId + ", paused=" + paused + ", key=" + key);
+        //Log.d("EvolvDebug", "[PAUSE] SessionProgressManager_v2.setPausedState: userId=" + userId + 
+        //       ", templateId=" + templateId + ", paused=" + paused + ", key=" + key);
         
         if (paused) {
             prefs.edit().putBoolean(key, true).apply();
-            Log.d("EvolvDebug", "[PAUSE] Sesión MARCADA como pausada en SharedPreferences");
+            //Log.d("EvolvDebug", "[PAUSE] Sesión MARCADA como pausada en SharedPreferences");
         } else {
             prefs.edit().remove(key).apply();
-            Log.d("EvolvDebug", "[PAUSE] Estado pausado ELIMINADO de SharedPreferences");
+            //Log.d("EvolvDebug", "[PAUSE] Estado pausado ELIMINADO de SharedPreferences");
         }
     }
     
@@ -103,14 +103,14 @@ public class SessionProgressManager_v2 {
         String key = getPausedKey(userId, templateId);
         boolean isPaused = prefs.getBoolean(key, false);
         
-        Log.d("EvolvDebug", "[PAUSE] SessionProgressManager_v2.isPaused: userId=" + userId + 
-              ", templateId=" + templateId + ", key=" + key + ", isPaused=" + isPaused);
+        //Log.d("EvolvDebug", "[PAUSE] SessionProgressManager_v2.isPaused: userId=" + userId + 
+        //       ", templateId=" + templateId + ", key=" + key + ", isPaused=" + isPaused);
         
         // Inspeccionar todas las entradas en SharedPreferences para debugging
-        Log.d("EvolvDebug", "[PAUSE] Todas las entradas en " + PAUSED_SESSIONS_PREFS + ":");
+        //Log.d("EvolvDebug", "[PAUSE] Todas las entradas en " + PAUSED_SESSIONS_PREFS + ":");
         for (String k : prefs.getAll().keySet()) {
             Object value = prefs.getAll().get(k);
-            Log.d("EvolvDebug", "[PAUSE] -----> key=" + k + ", value=" + value);
+            //Log.d("EvolvDebug", "[PAUSE] -----> key=" + k + ", value=" + value);
         }
         
         return isPaused;
@@ -166,7 +166,7 @@ public class SessionProgressManager_v2 {
         String keySuffix = "_" + templateId;
         int count = 0;
         
-        Log.d("EvolvDebug", "[PAUSE] Limpiando posibles estados duplicados para templateId=" + templateId + ", excluyendo userId=" + currentUserId);
+        //Log.d("EvolvDebug", "[PAUSE] Limpiando posibles estados duplicados para templateId=" + templateId + ", excluyendo userId=" + currentUserId);
         
         // Recorrer todas las claves y borrar las que correspondan a la misma plantilla pero de otros usuarios
         for (String key : prefs.getAll().keySet()) {
@@ -179,7 +179,7 @@ public class SessionProgressManager_v2 {
                         
                         // Si es un userId diferente para la misma plantilla, eliminarla
                         if (keyUserId != currentUserId) {
-                            Log.d("EvolvDebug", "[PAUSE] Eliminando estado pausado duplicado: " + key + " (userId=" + keyUserId + ")");
+                            //Log.d("EvolvDebug", "[PAUSE] Eliminando estado pausado duplicado: " + key + " (userId=" + keyUserId + ")");
                             editor.remove(key);
                             count++;
                         }
@@ -193,9 +193,9 @@ public class SessionProgressManager_v2 {
         // Si se encontraron entradas para eliminar, aplicar los cambios
         if (count > 0) {
             editor.apply();
-            Log.d("EvolvDebug", "[PAUSE] Se eliminaron " + count + " estados pausados duplicados");
+            //Log.d("EvolvDebug", "[PAUSE] Se eliminaron " + count + " estados pausados duplicados");
         } else {
-            Log.d("EvolvDebug", "[PAUSE] No se encontraron estados pausados duplicados para eliminar");
+            //Log.d("EvolvDebug", "[PAUSE] No se encontraron estados pausados duplicados para eliminar");
         }
     }
 

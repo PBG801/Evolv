@@ -2,14 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     
+
     <item
-        android:id="@+id/action_calendar"
-        android:title="@string/menu_calendar"
-        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:id="@+id/action_sound_settings"
+        android:title="@string/menu_sound_settings"
+        android:icon="@drawable/volume_up"
         app:showAsAction="ifRoom" />
         
-    <item
-        android:id="@+id/action_update_expired"
-        android:title="@string/menu_update_expired"
-        app:showAsAction="never" />
+
 </menu>

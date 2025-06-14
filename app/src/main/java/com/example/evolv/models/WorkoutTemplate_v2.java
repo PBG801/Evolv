@@ -43,7 +43,9 @@ public class WorkoutTemplate_v2 implements java.io.Serializable {
     public long getTemplateId() { return templateId; }
     public String getName() { return name; }
     public String getWorkoutType() { return workoutType; }
+    public void setWorkoutType(String workoutType) { this.workoutType = workoutType; }
     public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
     public int getUserId() { return userId; }
     public List<WorkoutTemplateExercise_v2> getExercises() { return exercises; }
     public void setExercises(List<WorkoutTemplateExercise_v2> exercises) { this.exercises = exercises; }

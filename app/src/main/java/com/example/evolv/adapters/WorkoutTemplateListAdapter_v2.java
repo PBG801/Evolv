@@ -72,10 +72,14 @@ public class WorkoutTemplateListAdapter_v2 extends RecyclerView.Adapter<WorkoutT
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         WorkoutTemplate_v2 template = templates.get(position);
         
-        // Modificar el texto mostrado para indicar si está pausado
+        // Modificar el texto mostrado para indicar si está pausado o es predeterminado
         String displayName = template.getName();
         if (template.isPaused()) {
             displayName = "[EN PAUSE] " + displayName;
+        }
+        // Añadir indicador para entrenamientos predeterminados
+        if (template.isDefault()) {
+            displayName = displayName + " [Predeterminado]";
         }
         holder.textTemplateName.setText(displayName);
         

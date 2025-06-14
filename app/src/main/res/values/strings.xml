@@ -48,7 +48,7 @@
     <string name="exercise_name_placeholder">Ejercicio</string>
     <string name="exercise_count_placeholder">Repeticiones: xN</string>
     <string name="exercise_duration_placeholder">Duración: N s</string>
-    <string name="rest_block_placeholder">Descanso entre series: s</string>
+    <string name="rest_block_placeholder">Descanso entre series: (seg)</string>
     <string name="pause">Pausar</string>
     <string name="next">Siguiente</string>
     <string name="resume">Reanudar</string>
@@ -80,7 +80,7 @@
     <string name="save">Guardar</string>
     <string name="delete">Eliminar</string>
     <string name="search_exercises">Buscar ejercicios...</string>
-    <string name="next_exercise">¡TIEMPO DE DESCANSO! El próximo ejercicio es:</string>
+    <string name="rest_next_exercise">¡TIEMPO DE DESCANSO! El próximo ejercicio es:</string>
     <string name="sets_reps_duration_label">Sets / Reps / Duración</string>
     <string name="template_label">Plantilla</string>
     <string name="type_label">Tipo</string>
@@ -136,4 +136,25 @@
     <string name="workout_state_pending">PENDIENTE</string>
     <string name="workout_state_completed">COMPLETADO</string>
     <string name="workout_state_not_completed">NO COMPLETADO</string>
+    
+    <!-- Strings para configuración de sonidos -->
+    <string name="menu_sound_settings">Configuración de sonido</string>
+    <string name="title_sound_settings">Configuración de notificaciones sonoras</string>
+    <string name="sound_enabled">Activar sonidos</string>
+    <string name="sound_volume">Volumen</string>
+    <string name="start_workout_sound">Sonido inicio entrenamiento</string>
+    <string name="end_workout_sound">Sonido fin entrenamiento</string>
+    <string name="exercise_change_sound">Sonido cambio de ejercicio</string>
+    <string name="test_sound">Probar sonido</string>
+    <string name="save_sound_settings">Guardar configuración</string>
+    <string name="settings_saved">Configuración guardada</string>
+    
+    <!-- Strings para la pantalla de descanso entre ejercicios -->
+    <string name="rest_period">Período de descanso</string>
+    <string name="next_exercise">Siguiente ejercicio:</string>
+    <string name="next_exercise_image">Imagen del siguiente ejercicio</string>
+    <string name="skip_rest">Saltar descanso</string>
+
+    <string name="prepare_next_exercise">Prepárate para el siguiente ejercicio</string>
+    <string name="rest_time_header">TIEMPO DE DESCANSO. PRÓXIMO EJERCICIO:</string>
 </resources>

@@ -1,0 +1,117 @@
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_edit_workout_template);
+        android.util.Log.d("CREA", "[EditWorkoutActivity][onCreate] INICIANDO...");
+        
+        // Inicializar el acceso a la base de datos
+        dbHelper = new DatabaseHelper(this);
+        
+        // Obtener referencias a los elementos del layout
+        editWorkoutName = findViewById(R.id.editWorkoutName);
+        spinnerWorkoutType = findViewById(R.id.spinnerWorkoutType);
+        editNotes = findViewById(R.id.editNotes); // Inicializamos el campo de notas
+        
+        // Obtener el ID de usuario actual desde las preferencias
+        SharedPreferences prefs = getSharedPreferences("UserPreferences", MODE_PRIVATE);
+        currentUserId = prefs.getInt("currentUserId", 1); // Por defecto, usuario 1
+        android.util.Log.d("CREA", "[EditWorkoutActivity][onCreate] Usuario actual ID: " + currentUserId);
+        
+        // Obtener el identificador del template a editar si se pasa como parámetro
+        if (getIntent().hasExtra("templateId")) {
+            templateId = getIntent().getLongExtra("templateId", -1);
+            if (templateId <= 0) templateId = null;
+            android.util.Log.d("CREA", "[EditWorkoutActivity][onCreate] Template ID: " + templateId);
+        }
+        
+        // Si estamos editando una plantilla existente, cargar sus datos
+        if (templateId != null && templateId > 0) {
+            WorkoutTemplate_v2 template = dbHelper.getWorkoutTemplate(templateId);
+            if (template != null) {
+                // Establecer nombre y tipo
+                editWorkoutName.setText(template.getName());
+                // Buscar posición del tipo de entrenamiento en el spinner
+                String[] workoutTypes = getResources().getStringArray(R.array.workout_types);
+                for (int i = 0; i < workoutTypes.length; i++) {
+                    if (workoutTypes[i].equals(template.getType())) {
+                        spinnerWorkoutType.setSelection(i);
+                        break;
+                    }
+                }
+                // Establecer notas si hay
+                if (template.getNotes() != null) {
+                    editNotes.setText(template.getNotes());
+                }
+                
+                // Cargar ejercicios asociados a esta plantilla
+                List<WorkoutTemplateExercise_v2> exercises = dbHelper.getExercisesForTemplate(templateId);
+                selectedExercises.addAll(exercises);
+                android.util.Log.d("CREA", "[EditWorkoutActivity][onCreate] Cargados " + exercises.size() + " ejercicios");
+            } else {
+                android.util.Log.e("CREA", "[EditWorkoutActivity][onCreate] ERROR: No se encontró la plantilla con ID: " + templateId);
+                templateId = null; // Reset para crear una nueva
+            }
+        }
+        
+        // Cargar todos los ejercicios disponibles
+        allExercises = dbHelper.getAllExercises();
+        android.util.Log.d("CREA", "[EditWorkoutActivity][onCreate] Cargados " + allExercises.size() + " ejercicios disponibles");
+        
+        // Configurar la vista principal
+        setupView();
+    }
+
+    /**
+     * Configura los elementos de la interfaz de usuario, como los botones y la lista de ejercicios.
+     */
+    private void setupView() {
+        // Configuración del RecyclerView para la lista de ejercicios seleccionados
+        RecyclerView recyclerExercises = findViewById(R.id.recyclerExercises);
+        recyclerExercises.setLayoutManager(new LinearLayoutManager(this));
+        exerciseAdapter = new WorkoutTemplateExerciseAdapter(selectedExercises, this);
+        recyclerExercises.setAdapter(exerciseAdapter);
+        
+        // Configuración del botón para agregar ejercicios
+        Button btnAddExercise = findViewById(R.id.btnAddExercise);
+        btnAddExercise.setOnClickListener(view -> {
+            // Mostrar diálogo para seleccionar ejercicios
+            showExerciseSelectionDialog();
+            android.util.Log.d("SPIN", "Botón de añadir ejercicio pulsado");
+        });
+        
+        // Configuración del botón para guardar la plantilla
+        Button btnSaveWorkout = findViewById(R.id.btnSaveWorkout);
+        btnSaveWorkout.setOnClickListener(view -> saveTemplate());
+        
+        // Configuración del botón para eliminar la plantilla
+        ImageButton btnDeleteWorkout = findViewById(R.id.btnDeleteWorkout);
+        
+        // Verificar si estamos editando una plantilla existente para configurar UI acorde
+        if (templateId != null && templateId > 0) {
+            setTitle("Editar entrenamiento");
+            btnDeleteWorkout.setOnClickListener(view -> {
+                // Mostrar diálogo de confirmación antes de eliminar
+                new AlertDialog.Builder(this)
+                        .setTitle("Eliminar entrenamiento")
+                        .setMessage("¿Estás seguro de que quieres eliminar esta plantilla de entrenamiento?")
+                        .setPositiveButton("Eliminar", (dialog, which) -> {
+                            // Verificar si no es una plantilla por defecto
+                            WorkoutTemplate_v2 template = dbHelper.getWorkoutTemplate(templateId);
+                            if (template != null && !template.isDefault()) {
+                                // Eliminar plantilla de la base de datos
+                                dbHelper.deleteWorkoutTemplate(templateId);
+                                //Toast.makeText(this, "Plantilla eliminada", Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK);
+                                finish();
+                            } else {
+                                //Toast.makeText(this, "No se puede eliminar una plantilla por defecto", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .show();
+            });
+        } else {
+            setTitle("Nuevo entrenamiento");
+            btnDeleteWorkout.setVisibility(View.GONE); // Ocultar botón eliminar en modo creación
+        }
+    }

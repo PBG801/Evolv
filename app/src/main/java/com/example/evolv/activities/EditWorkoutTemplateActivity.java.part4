@@ -1,0 +1,168 @@
+    /**
+     * Guarda la plantilla de entrenamiento y sus ejercicios asociados.
+     * - Obtiene los datos de la UI (nombre, tipo, notas).
+     * - Obtiene la lista actualizada de ejercicios seleccionados desde el Adapter.
+     * - Verifica si ya existe una plantilla con el mismo nombre.
+     * - Si existe una plantilla con el mismo nombre, muestra un diálogo de confirmación.
+     */
+    private void saveTemplate() {
+        String workoutName = editWorkoutName.getText().toString().trim();
+        String workoutType = spinnerWorkoutType.getSelectedItem() != null ? spinnerWorkoutType.getSelectedItem().toString() : "";
+        String workoutNotes = editNotes.getText().toString().trim();
+        
+        Log.d("SAVE", "[saveTemplate] Guardando plantilla: nombre=\"" + workoutName + "\", tipo=\"" + workoutType + "\"");
+        Log.d("SAVE", "[saveTemplate] Notas: " + workoutNotes);
+        
+        if (workoutName.isEmpty()) {
+            //Toast.makeText(this, "Por favor, introduzca un nombre para el entrenamiento", Toast.LENGTH_SHORT).show();
+            Log.e("SAVE", "[saveTemplate] ERROR: nombre vacío");
+            editWorkoutName.setError("Introduce un nombre");
+            return;
+        }
+        
+        // Verifica que la lista de ejercicios no esté vacía
+        if (selectedExercises.isEmpty()) {
+            //Toast.makeText(this, "Por favor, añada al menos un ejercicio", Toast.LENGTH_SHORT).show();
+            Log.e("SAVE", "[saveTemplate] ERROR: no hay ejercicios seleccionados");
+            return;
+        }
+        
+        // Verificar si existe otra plantilla con el mismo nombre para el mismo usuario
+        WorkoutTemplate_v2 existingTemplate = null;
+        if (templateId == null || templateId <= 0) {
+            existingTemplate = dbHelper.findWorkoutTemplateByName(workoutName, currentUserId);
+            Log.d("SAVE", "[saveTemplate] Buscando plantillas existentes con nombre=\"" + workoutName + "\" para userId=" + currentUserId);
+            if (existingTemplate != null) {
+                Log.d("SAVE", "[saveTemplate] Se encontró plantilla existente con id=" + existingTemplate.getId());
+            } else {
+                Log.d("SAVE", "[saveTemplate] No se encontraron plantillas existentes con ese nombre");
+            }
+        }
+        
+        // Si ya existe una plantilla con el mismo nombre (y no es la misma que estamos editando), mostrar diálogo
+        if (existingTemplate != null && (templateId == null || !templateId.equals(existingTemplate.getId()))) {
+            showNameDuplicateDialog(workoutName, workoutType, workoutNotes, selectedExercises, existingTemplate);
+            return;
+        }
+        
+        // Si no hay problemas, guardar la plantilla
+        saveWorkoutTemplate(workoutName, workoutType, workoutNotes, selectedExercises);
+    }
+
+    /**
+     * Muestra un diálogo cuando se detecta un nombre duplicado, permitiendo
+     * sobreescribir el entrenamiento existente o guardar con un nuevo nombre.
+     * 
+     * @param currentName Nombre actual del entrenamiento
+     * @param workoutType Tipo de entrenamiento
+     * @param notes Notas del entrenamiento
+     * @param exercises Lista de ejercicios asociados al entrenamiento
+     * @param existingTemplate Plantilla existente con el mismo nombre (opcional, puede ser null)
+     */
+    private void showNameDuplicateDialog(String currentName, String workoutType, String notes, List<WorkoutTemplateExercise_v2> exercises, WorkoutTemplate_v2 existingTemplate) {
+        android.util.Log.d("SAVE", "[EditWorkoutActivity][showNameDuplicateDialog] INICIANDO DIÁLOGO para nombre=\"" + currentName + "\", userId=" + currentUserId);
+        android.util.Log.d("SAVE", "[EditWorkoutActivity][showNameDuplicateDialog] Parámetros: workoutType=\"" + workoutType + "\", numExercises=" + (exercises != null ? exercises.size() : 0));
+        android.util.Log.d("CREA", "[showNameDuplicateDialog] Mostrando diálogo de nombre duplicado para: " + currentName);
+        
+        // Crear vista personalizada con campo de texto para el nombre
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_duplicate_workout_name, null);
+        
+        // Verificar si estamos en modo oscuro para aplicar colores directamente
+        boolean isNightMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+        
+        if (isNightMode) {
+            // Aplicar colores de modo oscuro directamente a la vista
+            dialogView.setBackgroundColor(getResources().getColor(R.color.surface_dark));
+            
+            // Aplicar colores a todos los TextViews contenidos en el layout
+            applyColorToAllTextViews(dialogView, R.color.on_primary);
+            
+            Log.d("NAME_DIALOG", "Aplicados colores de modo oscuro directamente a la vista");
+        }
+        
+        EditText editNewName = dialogView.findViewById(R.id.editNewWorkoutName);
+        editNewName.setText(currentName + " (copia)");
+        
+        // Determinar el tema adecuado según el modo
+        int dialogTheme = isNightMode 
+                ? R.style.ThemeOverlay_Evolv_Dialog_Night
+                : com.google.android.material.R.style.ThemeOverlay_Material3_Dialog_Alert;
+        
+        new AlertDialog.Builder(this, dialogTheme)
+                .setTitle("Nombre duplicado")
+                .setMessage("Ya existe un entrenamiento con este nombre. ¿Qué desea hacer?")
+                .setView(dialogView)
+                .setPositiveButton("Sobreescribir", (dialog, which) -> {
+                    // Si se elige sobreescribir, eliminar la plantilla existente y crear una nueva con el mismo nombre
+                    if (existingTemplate != null) {
+                        android.util.Log.d("SAVE", "[showNameDuplicateDialog][Sobreescribir] Eliminando plantilla existente con id=" + existingTemplate.getId());
+                        dbHelper.deleteWorkoutTemplate(existingTemplate.getId());
+                    }
+                    saveWorkoutTemplate(currentName, workoutType, notes, exercises);
+                })
+                .setNeutralButton("Guardar como nuevo", (dialog, which) -> {
+                    // Guardar con el nuevo nombre especificado
+                    String newName = editNewName.getText().toString().trim();
+                    if (!newName.isEmpty() && !newName.equals(currentName)) {
+                        android.util.Log.d("SAVE", "[showNameDuplicateDialog][GuardarComo] Guardando con nuevo nombre: " + newName);
+                        saveWorkoutTemplate(newName, workoutType, notes, exercises);
+                    } else {
+                        android.util.Log.e("SAVE", "[showNameDuplicateDialog][GuardarComo] ERROR: nombre vacío o igual al anterior");
+                        //Toast.makeText(this, "Por favor, introduzca un nombre diferente", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> {
+                    android.util.Log.d("SAVE", "[showNameDuplicateDialog] Operación cancelada por el usuario");
+                    dialog.dismiss();
+                })
+                .show();
+    }
+    
+    /**
+     * Realiza la operación de guardado de la plantilla en la base de datos
+     */
+    private void saveWorkoutTemplate(String name, String type, String notes, List<WorkoutTemplateExercise_v2> exercisesList) {
+        android.util.Log.d("SAVE", "[saveWorkoutTemplate] INICIANDO GUARDADO para nombre=\"" + name + "\", userId=" + currentUserId);
+        android.util.Log.d("SAVE", "[saveWorkoutTemplate] Parámetros: type=\"" + type + "\", numExercises=" + (exercisesList != null ? exercisesList.size() : 0));
+        
+        final long templateIdLocal;
+        
+        // Actualizar o crear la plantilla según corresponda
+        if (templateId != null && templateId > 0) {
+            // Actualizar plantilla existente
+            dbHelper.updateWorkoutTemplate(templateId, name, type, notes, false, false, currentUserId);
+            templateIdLocal = templateId;
+            android.util.Log.d("SAVE", "[saveWorkoutTemplate] Actualizada plantilla existente con id=" + templateIdLocal);
+            
+            // Eliminar todos los ejercicios antiguos de la plantilla
+            dbHelper.deleteAllExercisesFromTemplate(templateIdLocal);
+            android.util.Log.d("SAVE", "[saveWorkoutTemplate] Eliminados ejercicios antiguos de plantilla id=" + templateIdLocal);
+        } else {
+            // Crear nueva plantilla
+            templateIdLocal = dbHelper.insertWorkoutTemplate(name, type, notes, false, false, currentUserId);
+            android.util.Log.d("SAVE", "[saveWorkoutTemplate] Creada nueva plantilla con id=" + templateIdLocal + ", userId=" + currentUserId);
+        }
+        
+        // Insertar todos los ejercicios en la plantilla
+        if (exercisesList != null && !exercisesList.isEmpty() && templateIdLocal > 0) {
+            for (int i = 0; i < exercisesList.size(); i++) {
+                WorkoutTemplateExercise_v2 exercise = exercisesList.get(i);
+                exercise.setTemplateId(templateIdLocal);
+                exercise.setSortOrder(i + 1);
+                dbHelper.insertOrUpdateWorkoutTemplateExercise(exercise);
+                android.util.Log.d("SAVE", "[saveWorkoutTemplate] Insertado ejercicio " + exercise.getName() + 
+                        " (sets=" + exercise.getSets() + ", reps=" + exercise.getRepetitions() + ")");
+            }
+        }
+        
+        if (templateIdLocal > 0) {
+            // Crear una copia final de templateIdLocal para usar en el lambda
+            final long finalTemplateId = templateIdLocal;
+            runOnUiThread(() -> {
+                //Toast.makeText(this, finalTemplateId > 0 ? "Plantilla actualizada correctamente" : "Plantilla creada correctamente", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            });
+        }
+    }

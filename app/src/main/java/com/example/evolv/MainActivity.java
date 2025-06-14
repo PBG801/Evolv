@@ -69,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
                     finish();
                 } else {
                     // Credenciales incorrectas
-                    Toast.makeText(MainActivity.this, getString(R.string.login_failed), Toast.LENGTH_SHORT).show();
+                    // Comentado el Toast
+                     Toast.makeText(MainActivity.this, getString(R.string.login_failed), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 // Guardar userId = 0 en SharedPreferences
                 getSharedPreferences("EvolvPrefs", MODE_PRIVATE)
                         .edit().putLong("userId", ANONYMOUS_USER_ID).apply();
-                Toast.makeText(MainActivity.this, getString(R.string.toast_user_id, ANONYMOUS_USER_ID), Toast.LENGTH_LONG).show();
+                //Toast.makeText(MainActivity.this, getString(R.string.toast_user_id, ANONYMOUS_USER_ID), Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                 intent.putExtra("userId", ANONYMOUS_USER_ID);
                 intent.putExtra("isAnonymous", true);
