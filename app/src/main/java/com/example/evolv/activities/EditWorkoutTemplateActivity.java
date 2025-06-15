@@ -1,22 +1,25 @@
 package com.example.evolv.activities;
 
+import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,14 +27,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.evolv.DatabaseHelper;
 import com.example.evolv.R;
 import com.example.evolv.adapters.WorkoutTemplateExerciseAdapter;
-import com.example.evolv.models.WorkoutTemplateExercise_v2;
+import com.example.evolv.models.Exercise;
 import com.example.evolv.models.WorkoutTemplate_v2;
+import com.example.evolv.models.WorkoutTemplateExercise_v2;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+/**
+ * Actividad para editar plantillas de entrenamiento.
+ * Permite crear o editar plantillas, agregar o eliminar ejercicios,
+ * y guardar los cambios en la base de datos.
+ */
+
+
 
 
 public class EditWorkoutTemplateActivity extends AppCompatActivity implements WorkoutTemplateExerciseAdapter.OnExerciseEditListener {
@@ -305,10 +315,93 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
     }
     
     /**
-     * Aplica colores a todos los Spinner contenidos en una vista
+     * Asegura que todos los Spinner contenidos en una vista mantienen su interactividad
      * @param view La vista que contiene los Spinner
-     * @param bgColorResId El ID del recurso de color para fondo
+     */
+    private void ensureSpinnersInteractivity(View view) {
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                ensureSpinnersInteractivity(child);
+                
+                if (child instanceof Spinner) {
+                    Spinner spinner = (Spinner) child;
+                    Log.d("SPINNER_DEBUG", "Asegurando interactividad del spinner: " + spinner.getId());
+                    
+                    // Asegurar que el spinner está habilitado e interactivo
+                    spinner.setEnabled(true);
+                    spinner.setClickable(true);
+                    spinner.setFocusable(true);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Configura un spinner para garantizar su completa funcionalidad e interactividad
+     * Esta configuración permite que el spinner responda correctamente a los toques
+     * y que los ítems del dropdown sean fácilmente seleccionables
+     * 
+     * @param spinner El spinner a configurar
+     */
+    private void ensureFullSpinnerFunctionality(Spinner spinner) {
+        // Habilitar interactividad básica
+        spinner.setEnabled(true);
+        spinner.setClickable(true);
+        spinner.setFocusable(true);
+        
+        // Añadir listener de toque que permite el despliegue adecuado
+        spinner.setOnTouchListener((v, event) -> {
+            Log.d("SPINNER", "Spinner tocado - permitiendo comportamiento normal");
+            return false; // Importante: false permite que el evento siga propagándose
+        });
+        
+        // Listener para cambios de foco
+        spinner.setOnFocusChangeListener((v, hasFocus) -> {
+            Log.d("SPINNER", "Spinner cambio de foco: " + hasFocus);
+        });
+        
+        // Listener para selecciones de ítems
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("SPINNER", "Elemento seleccionado en posición " + position);
+                // Intentamos darle estilos mejorados al texto seleccionado
+                if (view instanceof TextView) {
+                    ((TextView) view).setTextColor(spinner.getResources()
+                            .getColor(android.R.color.black));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                Log.d("SPINNER", "Ninguna selección");
+            }
+        });
+    }
+
+    /**
+     * Aplica colores a todos los TextViews contenidos en una vista
+     * @param view La vista que contiene los TextView
      * @param textColorResId El ID del recurso de color para texto
+     */
+    private void applyColorToAllTextViews(View view, int textColorResId) {
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                applyColorToAllTextViews(child, textColorResId);
+            }
+        } else if (view instanceof TextView && !(view instanceof Button)) {
+            ((TextView) view).setTextColor(getResources().getColor(textColorResId));
+            Log.d("COLOR", "Color aplicado a TextView: " + ((TextView) view).getText());
+        }
+    }
+    
+    /**
+     * Aplica configuraciones a los spinners para asegurar su funcionalidad manteniendo la estética.
+     * NO modifica el fondo ni reemplaza adaptadores para evitar problemas de interactividad.
      */
     private void applyColorToAllSpinners(View view, int bgColorResId, int textColorResId) {
         if (view instanceof ViewGroup) {
@@ -316,70 +409,277 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
             for (int i = 0; i < viewGroup.getChildCount(); i++) {
                 View child = viewGroup.getChildAt(i);
                 applyColorToAllSpinners(child, bgColorResId, textColorResId);
-                
                 if (child instanceof Spinner) {
                     Spinner spinner = (Spinner) child;
-                    spinner.setBackgroundColor(getResources().getColor(bgColorResId));
-                    
-                    // Intentar configurar el color del texto del elemento seleccionado
-                    try {
-                        // El spinner debe tener un adapter para modificar su apariencia
-                        ArrayAdapter<?> adapter = (ArrayAdapter<?>) spinner.getAdapter();
-                        if (adapter != null) {
-                            // Obtener los items actuales del adapter para preservarlos
-                            List<Object> items = getItemsFromAdapter(adapter);
-                            
-                            // Crear un nuevo adapter con el estilo personalizado
-                            ArrayAdapter<Object> newAdapter = new ArrayAdapter<Object>(
-                                    this,
-                                    android.R.layout.simple_spinner_item,
-                                    items) {
-                                @Override
-                                public View getView(int position, View convertView, ViewGroup parent) {
-                                    View view = super.getView(position, convertView, parent);
-                                    if (view instanceof TextView) {
-                                        ((TextView) view).setTextColor(getResources().getColor(textColorResId));
-                                    }
-                                    return view;
-                                }
-                                
-                                @Override
-                                public View getDropDownView(int position, View convertView, ViewGroup parent) {
-                                    View view = super.getDropDownView(position, convertView, parent);
-                                    if (view instanceof TextView) {
-                                        ((TextView) view).setTextColor(getResources().getColor(textColorResId));
-                                        view.setBackgroundColor(getResources().getColor(bgColorResId));
-                                    }
-                                    return view;
-                                }
-                            };
-                            
-                            newAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            spinner.setAdapter(newAdapter);
-                            
-                            // Restaurar la selección original
-                            if (adapter.getCount() > 0 && spinner.getSelectedItemPosition() >= 0) {
-                                spinner.setSelection(Math.min(spinner.getSelectedItemPosition(), newAdapter.getCount() - 1));
-                            }
-                            
-                            Log.d("COLOR", "Nuevo adapter aplicado a Spinner con " + items.size() + " elementos");
-                        }
-                    } catch (Exception e) {
-                        Log.e("COLOR", "Error al aplicar colores al Spinner: " + e.getMessage());
-                    }
+                    // Solo aseguramos que sean interactivos sin modificar su estética
+                    spinner.setEnabled(true);
+                    spinner.setClickable(true);
+                    spinner.setFocusable(true);
                 }
             }
         }
     }
+    
     /**
-     * Método auxiliar para extraer los elementos de un ArrayAdapter
+     * Muestra un diálogo para editar los valores de un ejercicio (series, repeticiones, etc.)
+     * Aplica colores personalizados para modo oscuro directamente.
+     * 
+     * @param item El ejercicio a editar
+     * @param onUpdated Callback que se ejecutará después de actualizar el ejercicio
      */
-    private List<Object> getItemsFromAdapter(ArrayAdapter<?> adapter) {
-        List<Object> items = new ArrayList<>();
-        for (int i = 0; i < adapter.getCount(); i++) {
-            items.add(adapter.getItem(i));
+    private void showEditExerciseDialog(WorkoutTemplateExercise_v2 item, Runnable onUpdated) {
+        android.util.Log.d("EDIT", "[showEditExerciseDialog] INICIANDO con ejercicio: " + item.getName() + 
+                ", sets=" + item.getSets() + ", reps=" + item.getRepetitions());
+        
+        // Crear vista personalizada para el diálogo
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_exercise_values, null);
+        
+        // Verificar si estamos en modo oscuro para aplicar colores directamente
+        boolean isNightMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+        
+        if (isNightMode) {
+            // Aplicar colores de modo oscuro directamente a la vista
+            dialogView.setBackgroundColor(getResources().getColor(R.color.surface_dark));
+            
+            // Aplicar colores a todos los TextViews contenidos en el layout
+            applyColorToAllTextViews(dialogView, R.color.on_primary);
+            
+            // Ya no llamamos a applyColorToAllSpinners para evitar interferencias
+            // Los spinners usarán los estilos definidos en XML
+            
+            Log.d("EDIT_DIALOG", "Aplicados colores de modo oscuro a textos y fondo");
         }
-        return items;
+        
+        // Obtener referencias a los spinners
+       // Spinner editSets = dialogView.findViewById(R.id.editSets);
+        Spinner editReps = dialogView.findViewById(R.id.editReps);
+        Spinner editDuration = dialogView.findViewById(R.id.editDuration);
+        Spinner editRest = dialogView.findViewById(R.id.editRest);
+        
+        Log.d("EDIT_DIALOG", "Configurando spinners para máxima compatibilidad");
+        
+        // Preparar array adapter para todos los spinners usando layouts nativos estándar
+        String[] numValues = getResources().getStringArray(R.array.numeric_1_30);
+        
+        // IMPORTANTE: Al usar esta combinación específica de layouts nativos de Android, funcionará correctamente
+        int spinnerLayout = android.R.layout.simple_spinner_item;
+        int dropdownLayout = android.R.layout.simple_spinner_dropdown_item; // Layout estándar de Android
+        
+        ArrayAdapter<String> setsAdapter = new ArrayAdapter<>(this, spinnerLayout, numValues);
+        setsAdapter.setDropDownViewResource(dropdownLayout); 
+        //editSets.setAdapter(setsAdapter);
+        //editSets.setEnabled(true);
+        //editSets.setClickable(true);
+
+        /* editSets.setOnTouchListener((v, event) -> {
+            Log.d("SPIN", "Spinner sets tocado (onTouch)");
+            return false;
+        });
+        editSets.setOnFocusChangeListener((v, hasFocus) -> {
+            Log.d("SPIN", "Spinner sets focus change: " + hasFocus);
+        });
+        editSets.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                Log.d("SPIN", "Sets seleccionado en posición: " + position + ", valor: " + numValues[position]);
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                Log.d("SPIN", "Ningún sets seleccionado");
+            }
+        });*/
+
+        ArrayAdapter<String> repsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, numValues);
+        repsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        editReps.setAdapter(repsAdapter);
+        editReps.setEnabled(true);
+        editReps.setClickable(true);
+
+        editReps.setOnTouchListener((v, event) -> {
+            Log.d("SPIN", "Spinner reps tocado (onTouch)");
+            return false;
+        });
+        editReps.setOnFocusChangeListener((v, hasFocus) -> {
+            Log.d("SPIN", "Spinner reps focus change: " + hasFocus);
+        });
+        editReps.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                Log.d("SPIN", "Reps seleccionado en posición: " + position + ", valor: " + numValues[position]);
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                Log.d("SPIN", "Ningún reps seleccionado");
+            }
+        });
+
+        ArrayAdapter<String> durationAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, numValues);
+        durationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        editDuration.setAdapter(durationAdapter);
+        editDuration.setEnabled(true);
+        editDuration.setClickable(true);
+
+        editDuration.setOnTouchListener((v, event) -> {
+            Log.d("SPIN", "Spinner duration tocado (onTouch)");
+            return false;
+        });
+        editDuration.setOnFocusChangeListener((v, hasFocus) -> {
+            Log.d("SPIN", "Spinner duration focus change: " + hasFocus);
+        });
+        editDuration.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                Log.d("SPIN", "Duration seleccionado en posición: " + position + ", valor: " + numValues[position]);
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                Log.d("SPIN", "Ningún duration seleccionado");
+            }
+        });
+
+        ArrayAdapter<String> restAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, numValues);
+        restAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        editRest.setAdapter(restAdapter);
+        editRest.setEnabled(true);
+        editRest.setClickable(true);
+
+        editRest.setOnTouchListener((v, event) -> {
+            Log.d("SPIN", "Spinner rest tocado (onTouch)");
+            return false;
+        });
+        editRest.setOnFocusChangeListener((v, hasFocus) -> {
+            Log.d("SPIN", "Spinner rest focus change: " + hasFocus);
+        });
+        editRest.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                Log.d("SPIN", "Rest seleccionado en posición: " + position + ", valor: " + numValues[position]);
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                Log.d("SPIN", "Ningún rest seleccionado");
+            }
+        });
+
+        Log.d("EDIT_DIALOG", "Spinners configurados exactamente igual que spinnerWorkoutType");
+        
+        // Ya no usamos radio buttons para modo temporizador/repeticiones
+        // El ejercicio siempre se regirá por tiempo
+        
+        Log.d("EDIT_DIALOG", "Referencias a controles obtenidas");
+        
+        // Verificar que los spinners tienen adapter y elementos
+       /* if (editSets.getAdapter() != null) {
+            Log.d("EDIT_DIALOG", "editSets tiene " + editSets.getAdapter().getCount() + " elementos");
+        } else {
+            Log.e("EDIT_DIALOG", "ERROR: editSets no tiene adapter");
+        }*/
+        
+        // Log para depurar los valores actuales configurados por el usuario
+        Log.d("EDIT_DIALOG", "Usando valores configurados por el usuario: " +
+              "sets=" + item.getSets() + ", " +
+              "reps=" + item.getRepetitions() + ", " +
+              "duration=" + item.getTargetDuration() + ", " +
+              "rest=" + item.getRestPeriod() + ", " +
+              "durationType=" + item.getDurationType());
+        
+        // Aplicar valores mínimos sólo si son necesarios
+        if (item.getSets() <= 0) item.setSets(1);
+        if (item.getRepetitions() <= 0) item.setRepetitions(1);
+        if (item.getTargetDuration() <= 0) item.setTargetDuration(1);
+        if (item.getRestPeriod() < 0) item.setRestPeriod(0); // El descanso puede ser 0
+        
+        // Asegurar que los índices están dentro de los límites válidos (array es 0-based, pero valores son 1-based)
+       // int setsPos = Math.min(Math.max(0, item.getSets() - 1), (editSets.getAdapter() != null ? editSets.getAdapter().getCount() - 1 : 0));
+        int repsPos = Math.min(Math.max(0, item.getRepetitions() - 1), (editReps.getAdapter() != null ? editReps.getAdapter().getCount() - 1 : 0));
+        int durationPos = Math.min(Math.max(0, item.getTargetDuration() - 1), (editDuration.getAdapter() != null ? editDuration.getAdapter().getCount() - 1 : 0));
+        int restPos = Math.min(Math.max(0, item.getRestPeriod() - 1), (editRest.getAdapter() != null ? editRest.getAdapter().getCount() - 1 : 0));
+        
+        // Registrar los valores que se van a mostrar en los spinners
+        Log.d("EDIT_DIALOG", "Valores a mostrar: sets=" + item.getSets() + ", reps=" + 
+               item.getRepetitions() + ", duration=" + item.getTargetDuration() + ", rest=" + item.getRestPeriod());
+        
+
+        
+        // Configurar los spinners con valores actuales
+        //editSets.setSelection(setsPos);
+        editReps.setSelection(repsPos);
+        editDuration.setSelection(durationPos);
+        editRest.setSelection(restPos);
+        
+        // Establecer siempre el tipo de duración como "time"
+        item.setDurationType("time");
+        Log.d("EDIT_DIALOG", "Modo TEMPORIZADOR establecido por defecto");
+        
+        Log.d("EDIT_DIALOG", "Spinners configurados correctamente");
+        
+        // Determinar el tema adecuado según el modo
+        int dialogTheme = isNightMode 
+                ? R.style.ThemeOverlay_Evolv_Dialog_Night
+                : com.google.android.material.R.style.ThemeOverlay_Material3_Dialog_Alert;
+                     
+        Log.d("EDIT_DIALOG", "Aplicando tema: " + (isNightMode ? "nocturno" : "diurno"));
+        
+        // Crear y mostrar el diálogo con el tema adecuado
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, dialogTheme)
+                .setTitle(R.string.edit_exercise_values)
+                .setView(dialogView);
+        
+        // Crear el diálogo primero para establecer adecuadamente el contexto
+        AlertDialog dialog = builder.create();
+        
+        // Configurar los botones después de la creación del diálogo
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(android.R.string.ok), 
+                (dialogInterface, which) -> {
+                    try {
+                        Log.d("EDIT_DIALOG", "Botón OK pulsado");
+                        //int newSets = Integer.parseInt(editSets.getSelectedItem().toString());
+                        int newReps = Integer.parseInt(editReps.getSelectedItem().toString());
+                        int newDuration = Integer.parseInt(editDuration.getSelectedItem().toString());
+                        int newRest = Integer.parseInt(editRest.getSelectedItem().toString());
+                        
+                        // Ya no se usa el modo repeticiones, siempre es tiempo
+                        String newDurationType = "time";
+                        
+                        // Aplicar los nuevos valores 
+                        //item.setSets(newSets);
+                        // Guardamos repeticiones por compatibilidad pero no se usarán
+                        item.setRepetitions(newReps);
+                        item.setTargetDuration(newDuration);
+                        item.setRestPeriod(newRest);
+                        item.setDurationType(newDurationType);
+                        
+
+                        Log.d("EDIT_DIALOG", "Nuevos valores guardados: sets=" + item.getSets() + 
+                                ", reps=" + item.getRepetitions() + 
+                                ", duration=" + item.getTargetDuration() + 
+                                ", rest=" + item.getRestPeriod() + 
+                                ", durationType=" + item.getDurationType());
+                        if (onUpdated != null) onUpdated.run();
+                        Log.d("EDIT_DIALOG", "Callback onUpdated ejecutado");
+                    } catch (Exception e) {
+                        Log.e("EDIT_DIALOG", "ERROR al guardar los valores: " + e.getMessage(), e);
+                        Toast.makeText(EditWorkoutTemplateActivity.this, "Error al guardar los valores: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        
+        // Agregar botón negativo (Cancelar)
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(android.R.string.cancel),
+                (dialogInterface, which) -> {
+                    Log.d("EDIT_DIALOG", "Diálogo cancelado");
+                    // No hacer nada, simplemente cerrar el diálogo
+                });
+        
+        // Mostrar el diálogo una vez configurados todos los elementos
+        dialog.show();
+        
+        // Registrar la apertura exitosa del diálogo
+        Log.d("EDIT_DIALOG", "Diálogo mostrado correctamente");
     }
     
     /**
@@ -439,172 +739,6 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
     }
     
     /**
-     * Aplica colores a todos los TextViews contenidos en una vista
-     * @param view La vista que contiene los TextViews
-     * @param textColorResId El ID del recurso de color para el texto
-     */
-    private void applyColorToAllTextViews(View view, int textColorResId) {
-        if (view instanceof ViewGroup) {
-            ViewGroup viewGroup = (ViewGroup) view;
-            for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                View child = viewGroup.getChildAt(i);
-                applyColorToAllTextViews(child, textColorResId);
-                
-                if (child instanceof TextView && !(child instanceof Button)) {
-                    ((TextView) child).setTextColor(getResources().getColor(textColorResId));
-                    Log.d("COLOR", "Color aplicado a TextView: " + ((TextView) child).getText());
-                }
-            }
-        } else if (view instanceof TextView && !(view instanceof Button)) {
-            ((TextView) view).setTextColor(getResources().getColor(textColorResId));
-            Log.d("COLOR", "Color aplicado a TextView directo: " + ((TextView) view).getText());
-        }
-    }
-    
-    /**
-     * Implementación del método de la interfaz OnExerciseEditListener para editar un ejercicio.
-     */
-    // Implementación del método onEdit de la interfaz ya está definida arriba
-
-    /**
-     * Muestra un diálogo para editar los valores de un ejercicio (series, repeticiones, etc.)
-     * Aplica colores personalizados para modo oscuro directamente.
-     * 
-     * @param item El ejercicio a editar
-     * @param onUpdated Callback que se ejecutará después de actualizar el ejercicio
-     */
-    private void showEditExerciseDialog(WorkoutTemplateExercise_v2 item, Runnable onUpdated) {
-        android.util.Log.d("EDIT", "[showEditExerciseDialog] INICIANDO con ejercicio: " + item.getName() + 
-                ", sets=" + item.getSets() + ", reps=" + item.getRepetitions());
-        
-        // Crear vista personalizada para el diálogo
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_exercise_values, null);
-        
-        // Verificar si estamos en modo oscuro para aplicar colores directamente
-        boolean isNightMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
-                == Configuration.UI_MODE_NIGHT_YES;
-        
-        if (isNightMode) {
-            // Aplicar colores de modo oscuro directamente a la vista
-            dialogView.setBackgroundColor(getResources().getColor(R.color.surface_dark));
-            
-            // Aplicar colores a todos los TextViews contenidos en el layout
-            applyColorToAllTextViews(dialogView, R.color.on_primary);
-            
-            // Aplicar colores a todos los Spinners contenidos en el layout
-            applyColorToAllSpinners(dialogView, R.color.surface_dark, R.color.on_primary);
-            
-            Log.d("EDIT_DIALOG", "Aplicados colores de modo oscuro directamente a la vista");
-        }
-
-        Spinner editSets = dialogView.findViewById(R.id.editSets);
-        Spinner editReps = dialogView.findViewById(R.id.editReps);
-        Spinner editDuration = dialogView.findViewById(R.id.editDuration);
-        Spinner editRest = dialogView.findViewById(R.id.editRest);
-        Log.d("EDIT_DIALOG", "Referencias a spinners obtenidas");
-        
-        // Verificar que los spinners tienen adapter y elementos
-        if (editSets.getAdapter() != null) {
-            Log.d("EDIT_DIALOG", "editSets tiene " + editSets.getAdapter().getCount() + " elementos");
-        } else {
-            Log.e("EDIT_DIALOG", "ERROR: editSets no tiene adapter");
-        }
-        
-        // Obtener valores predeterminados desde recursos
-        final int DEFAULT_SETS = getResources().getInteger(R.integer.default_sets); // 1
-        final int DEFAULT_REPETITIONS = getResources().getInteger(R.integer.default_repetitions); // 3
-        final int DEFAULT_DURATION = getResources().getInteger(R.integer.default_duration); // 10
-        final int DEFAULT_REST = getResources().getInteger(R.integer.default_rest); // 10
-        
-        // FORZAR los valores predeterminados para garantizar consistencia en toda la aplicación
-        // Esta es una solución agresiva pero necesaria para unificar la experiencia de usuario
-        int originalSets = item.getSets();
-        int originalReps = item.getRepetitions();
-        int originalDuration = item.getTargetDuration();
-        int originalRest = item.getRestPeriod();
-        
-        // Aplicar valores predeterminados siempre
-        item.setSets(DEFAULT_SETS);
-        item.setRepetitions(DEFAULT_REPETITIONS);
-        item.setTargetDuration(DEFAULT_DURATION);
-        item.setRestPeriod(DEFAULT_REST);
-        
-        // Registrar cambios para depuración
-        if (originalSets != DEFAULT_SETS || originalReps != DEFAULT_REPETITIONS || 
-            originalDuration != DEFAULT_DURATION || originalRest != DEFAULT_REST) {
-            
-            Log.d("EDIT_DIALOG", "Valores FORZADOS a predeterminados: " +
-                  "sets: " + originalSets + "→" + DEFAULT_SETS + ", " +
-                  "reps: " + originalReps + "→" + DEFAULT_REPETITIONS + ", " +
-                  "duration: " + originalDuration + "→" + DEFAULT_DURATION + ", " +
-                  "rest: " + originalRest + "→" + DEFAULT_REST);
-        }
-        
-        // Asegurar que los índices están dentro de los límites válidos (array es 0-based, pero valores son 1-based)
-        int setsPos = Math.min(Math.max(0, item.getSets() - 1), (editSets.getAdapter() != null ? editSets.getAdapter().getCount() - 1 : 0));
-        int repsPos = Math.min(Math.max(0, item.getRepetitions() - 1), (editReps.getAdapter() != null ? editReps.getAdapter().getCount() - 1 : 0));
-        int durationPos = Math.min(Math.max(0, item.getTargetDuration() - 1), (editDuration.getAdapter() != null ? editDuration.getAdapter().getCount() - 1 : 0));
-        int restPos = Math.min(Math.max(0, item.getRestPeriod() - 1), (editRest.getAdapter() != null ? editRest.getAdapter().getCount() - 1 : 0));
-        
-        // Registrar los valores que se van a mostrar en los spinners
-        Log.d("EDIT_DIALOG", "Valores a mostrar: sets=" + item.getSets() + ", reps=" + 
-               item.getRepetitions() + ", duration=" + item.getTargetDuration() + ", rest=" + item.getRestPeriod());
-        
-        Log.d("EDIT_DIALOG", "Posiciones calculadas: sets=" + setsPos + ", reps=" + repsPos + 
-                ", duration=" + durationPos + ", rest=" + restPos);
-        
-        editSets.setSelection(setsPos);
-        editReps.setSelection(repsPos);
-        editDuration.setSelection(durationPos);
-        editRest.setSelection(restPos);
-        Log.d("EDIT_DIALOG", "Spinners configurados correctamente");
-        
-        // Determinar el tema adecuado según el modo
-        int dialogTheme = isNightMode 
-                ? R.style.ThemeOverlay_Evolv_Dialog_Night
-                : com.google.android.material.R.style.ThemeOverlay_Material3_Dialog_Alert;
-                     
-        Log.d("EDIT_DIALOG", "Aplicando tema: " + (isNightMode ? "nocturno" : "diurno"));
-        
-        // Crear y mostrar el diálogo con el tema adecuado
-        AlertDialog dialog = new AlertDialog.Builder(this, dialogTheme)
-                .setTitle(R.string.edit_exercise_values)
-                .setView(dialogView)
-                .setPositiveButton(android.R.string.ok, (dialogInterface, which) -> {
-                    try {
-                        Log.d("EDIT_DIALOG", "Botón OK pulsado");
-                        int newSets = Integer.parseInt(editSets.getSelectedItem().toString());
-                        int newReps = Integer.parseInt(editReps.getSelectedItem().toString());
-                        int newDuration = Integer.parseInt(editDuration.getSelectedItem().toString());
-                        int newRest = Integer.parseInt(editRest.getSelectedItem().toString());
-                        
-                        // Aplicar los nuevos valores 
-                        item.setSets(newSets);
-                        item.setRepetitions(newReps);
-                        item.setTargetDuration(newDuration);
-                        item.setRestPeriod(newRest);
-                        
-                        Log.d("EDIT_DIALOG", "Usuario seleccionó: sets=" + newSets + 
-                            ", reps=" + newReps + ", duration=" + newDuration + 
-                            ", rest=" + newRest);
-                        Log.d("EDIT_DIALOG", "Nuevos valores guardados: sets=" + item.getSets() + ", reps=" + 
-                                item.getRepetitions() + ", duration=" + item.getTargetDuration() + ", rest=" + item.getRestPeriod());
-                        if (onUpdated != null) onUpdated.run();
-                        Log.d("EDIT_DIALOG", "Callback onUpdated ejecutado");
-                    } catch (Exception e) {
-                        Log.e("EDIT_DIALOG", "ERROR al guardar los valores: " + e.getMessage(), e);
-                        //Toast.makeText(EditWorkoutTemplateActivity.this, "Error al guardar los valores: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .create();
-        
-        dialog.show();
-    }
-
-
-
-    /**
      * Guarda la plantilla de entrenamiento y sus ejercicios asociados.
      * - Obtiene los datos de la UI (nombre, tipo, notas).
      * - Obtiene la lista actualizada de ejercicios seleccionados desde el Adapter.
@@ -630,7 +764,7 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
         android.util.Log.d("CREA", "[saveTemplate] workoutType: " + workoutType);
         if (workoutTypePosition == 0) {
             android.util.Log.w("CREA", "[saveTemplate][VALIDACION] Tipo de entrenamiento no seleccionado");
-            //runOnUiThread(() -> Toast.makeText(this, "Por favor, selecciona un tipo de entrenamiento", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(this, "Por favor, selecciona un tipo de entrenamiento", Toast.LENGTH_SHORT).show());
             return;
         }
 
@@ -649,7 +783,7 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
         // Validación básica
         if (templateName.isEmpty() || exercises.isEmpty()) {
             android.util.Log.w("CREA", "[saveTemplate][VALIDACION] Nombre vacío o sin ejercicios seleccionados");
-            //runOnUiThread(() -> Toast.makeText(this, "Por favor, introduce un nombre y selecciona al menos un ejercicio", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(this, "Por favor, introduce un nombre y selecciona al menos un ejercicio", Toast.LENGTH_SHORT).show());
             return;
         }
         
@@ -659,16 +793,32 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
         
         android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate] INICIANDO VERIFICACIÓN de nombre duplicado: nombre=\"" + templateName + "\", userId=" + currentUserId + ", templateId=" + (templateId != null ? templateId : "null"));
         
+        // LOGS ADICIONALES: Verificación previa sobre si ya existe un entrenamiento con ese nombre (usando método directo)
+        boolean duplicadoVerificaciónPrevia = dbHelper.existsWorkoutTemplate_v2Name(templateName, currentUserId);
+        android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate][PRE-VERIFICACION] existsWorkoutTemplate_v2Name dice que nombre=\"" + templateName + "\" está duplicado: " + duplicadoVerificaciónPrevia);
+        
         // Primero, buscar si existe una plantilla con este nombre para este usuario
         existingTemplate = dbHelper.getWorkoutTemplateByNameAndUserId(templateName, currentUserId);
+        android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate][RESULTADO-BUSQUEDA] getWorkoutTemplateByNameAndUserId devolvió objeto nulo?: " + (existingTemplate == null));
         
         if (existingTemplate != null) {
             android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate] Encontrada plantilla con nombre=\"" + templateName + "\", userId=" + currentUserId + ", templateId=" + existingTemplate.getTemplateId());
+            android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate][DETALLE] Objeto encontrado: ID=" + existingTemplate.getTemplateId() + ", nombre=" + existingTemplate.getName() + ", userId=" + existingTemplate.getUserId());
             
             // Si estamos editando, verificar si es la misma plantilla u otra con el mismo nombre
             if (templateId != null && templateId > 0) {
                 // Es una edición - verificar si la plantilla existente es diferente a la que estamos editando
-                if (existingTemplate.getTemplateId() != templateId) {
+                // Añadir logs detallados para diagnosticar el problema de comparación
+                android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate] COMPARANDO IDs: existingTemplate.getTemplateId()=" + existingTemplate.getTemplateId() + 
+                    ", tipo: long, templateId=" + templateId + 
+                    ", tipo: " + (templateId == null ? "null" : "Long (objeto)"));
+
+                // Convertir a tipos compatibles para la comparación
+                long existingId = existingTemplate.getTemplateId();
+                long editingId = (templateId != null) ? templateId : -1L;
+                android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate] Valores convertidos para comparación: existingId=" + existingId + ", editingId=" + editingId);
+                
+                if (existingId != editingId) {
                     // Es otra plantilla con el mismo nombre - mostrar diálogo
                     isNameDuplicate = true;
                     android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate] Edición: El nombre ya existe en OTRA plantilla (id=" + existingTemplate.getTemplateId() + "), mostrando diálogo.");
@@ -690,13 +840,26 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
             isNameDuplicate = false;
         }
         
-        if (isNameDuplicate) {
+        // VALIDACIÓN REFORZADA: Verificación final antes de continuar
+        boolean duplicadoFinal = isNameDuplicate || dbHelper.existsWorkoutTemplate_v2Name(templateName, currentUserId);
+        android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate][VALIDACIÓN-FINAL] isNameDuplicate=" + isNameDuplicate + ", verificación adicional=" + dbHelper.existsWorkoutTemplate_v2Name(templateName, currentUserId));
+        
+        if (duplicadoFinal) {
             android.util.Log.w("CREA", "[saveTemplate][VALIDACION] Ya existe un entrenamiento con ese nombre");
             android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate] ¡DUPLICADO DETECTADO! Mostrando diálogo para nombre=\"" + templateName + "\", userId=" + currentUserId);
             
             // Si ya tenemos el objeto existente, usarlo directamente en vez de buscarlo otra vez
+            // Si por alguna razón no tenemos el objeto, intentar buscarlo otra vez
+            if (existingTemplate == null) {
+                android.util.Log.d("SAVE", "[EditWorkoutActivity][sobreescribir] No tenemos objeto existente, intentando recuperarlo");
+                existingTemplate = dbHelper.getWorkoutTemplateByNameAndUserId(templateName, currentUserId);
+            } else {
+                android.util.Log.d("SAVE", "[EditWorkoutActivity][sobreescribir] Usando objeto existente pasado como parámetro, templateId=" + existingTemplate.getTemplateId());
+            }
+            
             // Mostrar un diálogo para gestionar duplicados en lugar de simplemente mostrar un Toast
             showNameDuplicateDialog(templateName, workoutType, notes, exercises, existingTemplate);
+            android.util.Log.d("SAVE", "[EditWorkoutActivity][saveTemplate][POST-DIALOG] Diálogo de duplicados mostrado y flujo detenido");
             return;
         } else {
             // Si es una plantilla predeterminada (userId = -1), creamos un nombre único para la copia
@@ -732,7 +895,19 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
                 if (wte.getRepetitions() < 1) wte.setRepetitions(3);
                 if (wte.getTargetDuration() < 0) wte.setTargetDuration(10);
                 if (wte.getRestPeriod() < 0) wte.setRestPeriod(10);
-                if (wte.getDurationType() == null) wte.setDurationType("");
+                
+                // Asignar correctamente el tipo de duración basado en la configuración
+                // Si las repeticiones > 1, entonces es un ejercicio basado en repeticiones
+                // Si no, es un ejercicio basado en tiempo
+                if (wte.getRepetitions() > 1) {
+                    wte.setDurationType("reps");
+                    android.util.Log.d("CREA", "Ejercicio " + wte.getName() + " configurado como tipo 'reps' con " + 
+                            wte.getRepetitions() + " repeticiones");
+                } else {
+                    wte.setDurationType("time");
+                    android.util.Log.d("CREA", "Ejercicio " + wte.getName() + " configurado como tipo 'time' con " + 
+                            wte.getTargetDuration() + " segundos");
+                }
             }
             
             // Como no hay setter para el nombre, creamos una nueva instancia
@@ -830,7 +1005,7 @@ int spinnerPosition = workoutTypeAdapter != null ? workoutTypeAdapter.getPositio
                 // Usar el entrenamiento existente si ya lo tenemos o buscar uno nuevo
                 WorkoutTemplate_v2 templateToUpdate = existingTemplate;
                 if (templateToUpdate == null) {
-                    android.util.Log.d("SAVE", "[EditWorkoutActivity][sobreescribir] No tenemos objeto existente, buscando entrenamiento con nombre=\"" + currentName + "\", userId=" + currentUserId);
+                    android.util.Log.d("SAVE", "[EditWorkoutActivity][sobreescribir] No tenemos objeto existente, intentando recuperarlo");
                     templateToUpdate = dbHelper.getWorkoutTemplateByNameAndUserId(currentName, currentUserId);
                 } else {
                     android.util.Log.d("SAVE", "[EditWorkoutActivity][sobreescribir] Usando objeto existente pasado como parámetro, templateId=" + templateToUpdate.getTemplateId());

@@ -30,7 +30,6 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
     private CountDownTimer exerciseTimer;
     private CountDownTimer restTimer;
     private int exerciseIndex = 0;
-    private int setIndex = 0;
     private int repIndex = 0;
     private boolean isPaused = false;
     private long millisLeft = 0L;
@@ -65,6 +64,7 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("TIEMPO_EJERCICIO", "[onCreate] Iniciando WorkoutPlayerActivity_v2");
 
         // REP: Log de datos recibidos por Intent
         Intent intent = getIntent();
@@ -100,11 +100,11 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
         // Recupera el objeto completo con try-catch para capturar errores de deserialización
         try {
             Object rawTemplate = getIntent().getSerializableExtra("template");
-            Log.d("EvolvDebug", "[DIAG] WorkoutPlayer.onCreate: rawTemplate=" +
+            Log.d("REP", "[DIAG] WorkoutPlayer.onCreate: rawTemplate=" +
                     (rawTemplate != null ? rawTemplate.getClass().getName() : "null"));
 
             template = (WorkoutTemplate_v2) rawTemplate;
-            Log.d("EvolvDebug", "[DIAG] WorkoutPlayer.onCreate: Cast exitoso a WorkoutTemplate_v2");
+            Log.d("REP", "[DIAG] WorkoutPlayer.onCreate: Cast exitoso a WorkoutTemplate_v2");
         } catch (Exception e) {
             Log.e("EvolvDebug", "[DIAG] WorkoutPlayer.onCreate: Error deserializando template", e);
             //Toast.makeText(this, "Error: Problema al cargar la plantilla: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -174,11 +174,10 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
 
             if (progress != null) {
                 Log.d("EvolvDebug", "[WorkoutPlayer] Progreso encontrado: exerciseIndex=" +
-                        progress.exerciseIndex + ", setIndex=" + progress.setIndex + ", repIndex=" + progress.repIndex);
+                        progress.exerciseIndex + ", repIndex=" + progress.repIndex);
 
                 // Restaurar el estado exacto donde quedó el usuario
                 this.exerciseIndex = progress.exerciseIndex;
-                this.setIndex = progress.setIndex;
                 this.repIndex = progress.repIndex;
 
                 //Toast.makeText(this, "Retomando entrenamiento pausado", Toast.LENGTH_SHORT).show();
@@ -197,83 +196,90 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
     }
 
     /**
-     * Avanza a la siguiente repetición, set o ejercicio determinando
-     * automáticamente el tipo de progreso SIN reproducir sonidos.
-     * <p>
-     * NOTA: Esta es la versión predeterminada que se debe usar para interacciones manuales
-     * como pulsar botones. NO reproduce sonidos.
+     * Avanza al siguiente ejercicio completo SIN reproducir sonidos.
+     * Método llamado desde el botón Siguiente - SALTA EJERCICIO COMPLETO.
      */
     private void avanzar() {
-        Log.d("SONIDO", "Llamada a avanzar() - SIN sonido");
-        avanzar(false); // Cambiado a false para que no reproduzca sonidos por defecto
+        Log.d("SONIDO", "Llamada a avanzar() desde botón - Saltando ejercicio completo");
+        
+        // CRÍTICO: Cancelar temporizador actual para evitar números superpuestos
+        if (exerciseTimer != null) {
+            exerciseTimer.cancel();
+            exerciseTimer = null;
+            Log.d("TIMER_DEBUG", "[avanzar] Temporizador cancelado correctamente");
+        }
+        
+        // Saltar al siguiente ejercicio completo
+        if (exerciseIndex < template.getExercises().size() - 1) {
+            exerciseIndex++;
+            repIndex = 0;
+            Log.d("DEPURACION", "[avanzar][MANUAL] Saltando a ejercicio " + exerciseIndex);
+            advanceToNextExercise();
+        } else {
+            // Estado Final
+            Log.d("DEPURACION", "[avanzar][MANUAL] Último ejercicio alcanzado: Estado Final");
+            exerciseIndex++;
+            advanceToNextExercise();
+        }
     }
 
     /**
-     * Avanza a la siguiente repetición, set o ejercicio
+     * Avanza automáticamente después del temporizador - MANEJA REPETICIONES.
+     * Método llamado desde onFinish() del temporizador.
+     */
+    private void avanzarAutomatico() {
+        Log.d("SONIDO", "Llamada a avanzarAutomatico() - CON manejo de repeticiones");
+        
+        if (template == null || template.getExercises() == null) return;
+
+        // Obtener ejercicio actual y sus configuraciones
+        if (exerciseIndex < template.getExercises().size()) {
+            WorkoutTemplateExercise_v2 currentExercise = template.getExercises().get(exerciseIndex);
+            int configuredReps = currentExercise.getRepetitions();
+            
+            Log.d("REP", "[avanzarAutomatico] Evaluando: repIndex=" + repIndex + ", configuredReps=" + configuredReps);
+
+            // ¿Hay más repeticiones del ejercicio actual?
+            if (repIndex < configuredReps - 1) {
+                repIndex++;
+                Log.d("REP", "[avanzarAutomatico] Avanzando a repetición " + (repIndex + 1) + " de " + configuredReps);
+                
+                // Reiniciar el mismo ejercicio con nueva repetición
+                updateExerciseDisplay();
+                return;
+            }
+        }
+
+        // Si llegamos aquí, completamos todas las repeticiones → siguiente ejercicio
+        if (exerciseIndex < template.getExercises().size() - 1) {
+            exerciseIndex++;
+            repIndex = 0;
+            Log.d("DEPURACION", "[avanzarAutomatico] Completado ejercicio, avanzando a " + exerciseIndex);
+            
+            // Reproducir sonido de cambio de ejercicio para avance automático
+            if (soundManager != null) {
+                Log.d("SONIDO", "Reproduciendo sonido de EJERCICIO " + exerciseIndex + " (automático)");
+                soundManager.playExerciseChangeSound();
+            }
+            
+            advanceToNextExercise();
+        } else {
+            // Estado Final
+            Log.d("DEPURACION", "[avanzarAutomatico] Último ejercicio completado: Estado Final");
+            exerciseIndex++;
+            advanceToNextExercise();
+        }
+    }
+
+    /**
+     * Avanza al siguiente ejercicio completo
      *
      * @param playSounds Si es true, reproducirá los sonidos correspondientes al tipo de avance
      */
     private void avanzar(boolean playSounds) {
-
-        if (template == null || template.getExercises() == null) return;
-
-        // Determinar el tipo de avance (repetición, set o ejercicio)
-        if (exerciseIndex < template.getExercises().size()) {
-            WorkoutTemplateExercise_v2 currentExercise = template.getExercises().get(exerciseIndex);
-
-            // ¿Avanzamos de repetición dentro del mismo set?
-            if (repIndex < currentExercise.getRepetitions() - 1) {
-                repIndex++;
-                Log.d("DEPURACION", "[avanzar] Avanzando a repetición " + repIndex);
-
-                // Ya no reproducimos sonido de cambio de repetición
-                Log.d("SONIDO", "Saltando reproducción de sonido de repetición - nueva lógica");
-
-                updateExerciseDisplay();
-                return;
-            }
-
-            // ¿Avanzamos de set dentro del mismo ejercicio?
-            if (setIndex < currentExercise.getSets() - 1) {
-                setIndex++;
-                repIndex = 0;
-                Log.d("DEPURACION", "[avanzar] Avanzando a set " + setIndex);
-
-                // Ya no reproducimos sonido de cambio de serie
-                Log.d("SONIDO", "Saltando reproducción de sonido de cambio de serie - nueva lógica");
-
-                updateExerciseDisplay();
-                return;
-            }
-        }
-
-        // Si llegamos aquí, avanzamos al siguiente ejercicio
-        if (exerciseIndex < template.getExercises().size() - 1) {
-            exerciseIndex++;
-            setIndex = 0;
-            repIndex = 0;
-            Log.d("DEPURACION", "[avanzar][DESPUES] ejercicioIndex=" + exerciseIndex);
-            Log.d("REST", "[avanzar] Cambiando al ejercicio " + exerciseIndex + " - Llamando a advanceToNextExercise() para mostrar pantalla de descanso");
-
-            // Reproducir sonido de cambio de ejercicio
-            if (playSounds && soundManager != null) {
-                Log.d("SONIDO", "Reproduciendo sonido de EJERCICIO " + exerciseIndex +
-                        " (soundEnabled=" + soundManager.isSoundEnabled() + ")");
-                soundManager.playExerciseChangeSound();
-            } else {
-                Log.d("SONIDO", "NO reproduciendo sonido de ejercicio: playSounds=" + playSounds +
-                        ", soundManager=" + (soundManager != null));
-            }
-
-            // Llamamos a advanceToNextExercise en lugar de updateExerciseDisplay
-            // para que se evalúe si debe mostrar la pantalla de descanso
-            advanceToNextExercise();
-        } else {
-            // Estado Final: incrementar el índice y lanzar la lógica de finalización
-            Log.d("DEPURACION", "[avanzar] Último ejercicio alcanzado: Estado Final");
-            exerciseIndex++; // <--- ESTE INCREMENTO ES CLAVE
-            advanceToNextExercise();
-        }
+        // Este método ya no se usa, mantenido para compatibilidad
+        Log.d("DEPURACION", "[avanzar] Método obsoleto llamado - redirigiendo a avanzarAutomatico()");
+        avanzarAutomatico();
     }
 
     // Retrocede a la repetición, set o ejercicio anterior
@@ -282,9 +288,15 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
         Log.d("DEPURACION", "[retroceder][ANTES] ejercicioIndex=" + exerciseIndex);
         if (template == null || template.getExercises() == null) return;
 
+        // CRÍTICO: Cancelar temporizador actual para evitar números superpuestos
+        if (exerciseTimer != null) {
+            exerciseTimer.cancel();
+            exerciseTimer = null;
+            Log.d("TIMER_DEBUG", "[retroceder] Temporizador cancelado correctamente");
+        }
+
         if (exerciseIndex > 0) {
             exerciseIndex--;
-            setIndex = 0;
             repIndex = 0;
             Log.d("DEPURACION", "[retroceder][DESPUES] ejercicioIndex=" + exerciseIndex);
             updateExerciseDisplay();
@@ -302,7 +314,7 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
      */
     private void avanzarAutomaticoConSonido() {
         Log.d("SONIDO", "Llamada a avanzarAutomaticoConSonido() - CON sonido");
-        avanzar(true); // Reproduce sonidos
+        avanzarAutomatico(); // Reproduce sonidos
     }
 
     /**
@@ -402,7 +414,6 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
         if (exerciseTimer != null) {
             exerciseTimer.cancel();
             exerciseTimer = null;
-            Log.d("REST", "[showRestPeriod] Temporizador de ejercicio cancelado");
         }
 
         // Obtenemos el ejercicio actual (que acabamos de completar)
@@ -600,7 +611,6 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
                 if (template.isDefault()) {
                     long currentUserId = getIntent().getLongExtra("USER_ID", 0);
                     userIdToUse = (int) ((currentUserId == 0) ? 0 : currentUserId);
-                    Log.d("EvolvDebug", "[FINISH] Utilizando userIdToUse=" + userIdToUse + " para limpiar estado pausado");
                 }
 
                 // 1. Eliminar PRIMERO el estado de pausa en SharedPreferences
@@ -650,14 +660,14 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
 
     private void advanceToNextExercise() {
         Log.d("REST", "[advanceToNextExercise] INICIO del método - exerciseIndex=" + exerciseIndex);
-        Log.d("DEPURACION", "[advanceToNextExercise][ANTES] ejercicioIndex=" + exerciseIndex + ", setIndex=" + setIndex + ", repIndex=" + repIndex);
+        Log.d("DEPURACION", "[advanceToNextExercise][ANTES] ejercicioIndex=" + exerciseIndex + ", repIndex=" + repIndex);
 
         if (template != null && template.getExercises() != null) {
             Log.d("REST", "[advanceToNextExercise] Número total de ejercicios: " + template.getExercises().size());
 
             if (exerciseIndex < template.getExercises().size()) {
                 WorkoutTemplateExercise_v2 currentExercise = template.getExercises().get(exerciseIndex);
-                Log.d("DEPURACION", "[advanceToNextExercise][ANTES] sets=" + currentExercise.getSets() + ", reps=" + currentExercise.getRepetitions());
+                Log.d("DEPURACION", "[advanceToNextExercise][ANTES] reps=" + currentExercise.getRepetitions());
                 Log.d("REST", "[advanceToNextExercise] Ejercicio actual: " + currentExercise.getName() + ", restPeriod=" + currentExercise.getRestPeriod() + " segundos");
             } else {
                 Log.d("REST", "[advanceToNextExercise] exerciseIndex está fuera de los límites: " + exerciseIndex);
@@ -678,7 +688,7 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
 
         if (exerciseIndex < template.getExercises().size()) {
             updateExerciseDisplay();
-            Log.d("DEPURACION", "[advanceToNextExercise][DESPUES] ejercicioIndex=" + exerciseIndex + ", setIndex=" + setIndex + ", repIndex=" + repIndex);
+            Log.d("DEPURACION", "[advanceToNextExercise][DESPUES] ejercicioIndex=" + exerciseIndex + ", repIndex=" + repIndex);
         } else {
             // Cambiamos el estado a FINISHED
             currentState = WorkoutState.FINISHED;
@@ -718,50 +728,55 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
     // Actualiza la UI para mostrar el ejercicio actual
     private void updateExerciseDisplay() {
         Log.d("REST", "[updateExerciseDisplay] INICIO - exerciseIndex=" + exerciseIndex + ", estado actual=" + currentState);
-        Log.d("DEPURACION", "[updateExerciseDisplay][ANTES] ejercicioIndex=" + exerciseIndex + ", setIndex=" + setIndex + ", repIndex=" + repIndex);
-
-        // Verificar si deberíamos estar en período de descanso
-        if (template != null && template.getExercises() != null) {
-            if (exerciseIndex > 0 && exerciseIndex < template.getExercises().size()) {
-                WorkoutTemplateExercise_v2 previousExercise = template.getExercises().get(exerciseIndex - 1);
-                int restTime = previousExercise.getRestPeriod();
-                Log.d("REST", "[updateExerciseDisplay] Ejercicio anterior (" + (exerciseIndex - 1) + ") tenía un período de descanso de " + restTime + " segundos");
-
-                // Verificar si deberíamos estar mostrando la pantalla de descanso
-                if (restTime > 0 && currentState != WorkoutState.REST) {
-                    Log.d("REST", "[updateExerciseDisplay] ¡Se detectó que debería estar en pantalla de descanso! Tiempo de descanso: " + restTime);
-                }
-            }
-        }
+        Log.d("REP", "[updateExerciseDisplay][ANTES] ejercicioIndex=" + exerciseIndex + ", repIndex=" + repIndex);
 
         if (template != null && template.getExercises() != null && exerciseIndex < template.getExercises().size()) {
             WorkoutTemplateExercise_v2 currentExercise = template.getExercises().get(exerciseIndex);
-            Log.d("REST", "[updateExerciseDisplay] Ejercicio actual: " + currentExercise.getName() + ", tiempo de descanso configurado: " + currentExercise.getRestPeriod() + " segundos");
-            Log.d("DEPURACION", "[updateExerciseDisplay][ANTES] sets=" + currentExercise.getSets() + ", reps=" + currentExercise.getRepetitions());
+            Log.d("REP", "[REP][UI] Mostrando: " + currentExercise.getName() + " / " + currentExercise.getImg_url());
+
+            // Cargar imagen del ejercicio
+            ImageView imageExercise = findViewById(R.id.imageExercise);
+            if (currentExercise.getImg_url() != null) {
+                int resId = getResources().getIdentifier(
+                        currentExercise.getImg_url(), "drawable", getPackageName());
+                if (resId != 0) {
+                    imageExercise.setImageResource(resId);
+                } else {
+                    imageExercise.setImageResource(R.drawable.ic_exercise_placeholder); // fallback
+                }
+            } else {
+                imageExercise.setImageResource(R.drawable.ic_exercise_placeholder); // fallback
+            }
+
+            // Mostrar progreso SIN referencias a "Serie"
+            TextView textProgress = findViewById(R.id.textProgress);
+            String progreso = String.format(
+                    "Ejercicio %d/%d, Rep %d/%d",
+                    exerciseIndex + 1,
+                    template.getExercises().size(),
+                    repIndex + 1,
+                    currentExercise.getRepetitions()
+            );
+            textProgress.setText(progreso);
         }
-        Log.d("REP", "updateExerciseDisplay: ejercicioIndex=" + exerciseIndex + ", setIndex=" + setIndex + ", repIndex=" + repIndex);
-        if (repIndex == 0 && setIndex == 0) {
+        
+        if (repIndex == 0) {
             showExerciseIntroPanel();
         } else {
             updateExerciseDisplayCore();
-        }
-        Log.d("DEPURACION", "[updateExerciseDisplay][DESPUES] ejercicioIndex=" + exerciseIndex + ", setIndex=" + setIndex + ", repIndex=" + repIndex);
-        if (template != null && template.getExercises() != null && exerciseIndex < template.getExercises().size()) {
-            WorkoutTemplateExercise_v2 currentExercise = template.getExercises().get(exerciseIndex);
-            Log.d("DEPURACION", "[updateExerciseDisplay][DESPUES] sets=" + currentExercise.getSets() + ", reps=" + currentExercise.getRepetitions());
         }
     }
 
     // Panel de introducción al ejercicio
     private void showExerciseIntroPanel() {
-        Log.d("REP", "showExerciseIntroPanel: ejercicioIndex=" + exerciseIndex + ", setIndex=" + setIndex + ", repIndex=" + repIndex);
+        Log.d("REP", "showExerciseIntroPanel: ejercicioIndex=" + exerciseIndex + ", repIndex=" + repIndex);
 
         if (template == null || template.getExercises() == null || template.getExercises().isEmpty()) {
             Log.e("EVOLV-DEBUG", "Trying to access exercises but list is empty or null");
             return;
         }
 
-        TextView textIntroTitle = findViewById(R.id.textIntroTitle);
+        //TextView textIntroTitle = findViewById(R.id.textIntroTitle);
         TextView textIntroExerciseName = findViewById(R.id.textIntroExerciseName);
         TextView textIntroExerciseDesc = findViewById(R.id.textIntroExerciseDesc);
 
@@ -770,27 +785,29 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
         // Buscar la descripción en tu lista de ejercicios base si la tienes
         String descripcion = currentExercise.getName(); // Placeholder
         textIntroExerciseName.setText(currentExercise.getName());
-        textIntroExerciseDesc.setText(descripcion);
+        textIntroExerciseDesc.setText("");
 
         Log.d("REP", "showExerciseIntroPanel: llamando a updateExerciseDisplayCore()");
         updateExerciseDisplayCore();
     }
-
     // Lógica principal de actualización de la UI del ejercicio
     private void updateExerciseDisplayCore() {
-        Log.d("DEPURACION", "[updateExerciseDisplayCore][ANTES] ejercicioIndex=" + exerciseIndex + ", setIndex=" + setIndex + ", repIndex=" + repIndex);
+        Log.d("REP", "[updateExerciseDisplayCore][ANTES] ejercicioIndex=" + exerciseIndex + ", repIndex=" + repIndex);
         if (template != null && template.getExercises() != null && exerciseIndex < template.getExercises().size()) {
             WorkoutTemplateExercise_v2 currentExercise = template.getExercises().get(exerciseIndex);
-            Log.d("DEPURACION", "[updateExerciseDisplayCore][ANTES] sets=" + currentExercise.getSets() + ", reps=" + currentExercise.getRepetitions());
+            Log.d("REP", "[updateExerciseDisplayCore][ANTES] reps=" + currentExercise.getRepetitions());
         }
         // Cancelar temporizador anterior si existe
         if (exerciseTimer != null) {
             exerciseTimer.cancel();
             exerciseTimer = null;
         }
-        Log.d("EvolvDebug", "[REP][UI] updateExerciseDisplayCore ejecutado para index: " + exerciseIndex); // REP
+
+        progressBar.setVisibility(View.VISIBLE);
+        
+        // Obtener ejercicio actual
         WorkoutTemplateExercise_v2 currentExercise = template.getExercises().get(exerciseIndex);
-        Log.d("EvolvDebug", "[REP][UI] Mostrando: " + currentExercise.getName() + " / " + currentExercise.getImg_url()); // REP
+        Log.d("REP", "[REP][UI] Mostrando: " + currentExercise.getName() + " / " + currentExercise.getImg_url());
 
         // Cargar imagen del ejercicio
         ImageView imageExercise = findViewById(R.id.imageExercise);
@@ -806,30 +823,95 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
             imageExercise.setImageResource(R.drawable.ic_exercise_placeholder); // fallback
         }
 
+        // Obtener configuraciones del ejercicio
+        int configuredReps = currentExercise.getRepetitions();
+        int configuredDuration = currentExercise.getTargetDuration();
+        
+        // LOGS DE DIAGNÓSTICO CRÍTICO para valor 60 vs 10
+        Log.e("DURATION_BUG", "=== INVESTIGACIÓN CRÍTICA DEL BUG 60 vs 10 ===");
+        Log.e("DURATION_BUG", "Ejercicio: " + currentExercise.getName());
+        Log.e("DURATION_BUG", "exerciseId: " + currentExercise.getExerciseId());
+        Log.e("DURATION_BUG", "getTargetDuration(): " + currentExercise.getTargetDuration());
+        Log.e("DURATION_BUG", "getDuration(): " + currentExercise.getDuration());
+        Log.e("DURATION_BUG", "durationType: " + currentExercise.getDurationType());
+        Log.e("DURATION_BUG", "repetitions: " + currentExercise.getRepetitions());
+        Log.e("DURATION_BUG", "sets: " + currentExercise.getSets());
+        Log.e("DURATION_BUG", "restPeriod: " + currentExercise.getRestPeriod());
+        Log.e("DURATION_BUG", "configuredDuration usado: " + configuredDuration);
+        
+        // VERIFICAR SI HAY ALGÚN MÉTODO ADICIONAL QUE SOBRESCRIBA EL VALOR
+        if (configuredDuration != 10) {
+            Log.e("DURATION_BUG", "🚨 VALOR INCORRECTO DETECTADO: configuredDuration=" + configuredDuration + " (debería ser 10)");
+            Log.e("DURATION_BUG", "Verificando si getTargetDuration() != getDuration():");
+            Log.e("DURATION_BUG", "getTargetDuration()=" + currentExercise.getTargetDuration() + 
+                                  ", getDuration()=" + currentExercise.getDuration());
+        }
+        Log.e("DURATION_BUG", "===============================");
+        
+        // 🔥 LOG CRÍTICO: MOSTRAR EXACTAMENTE QUÉ VALOR SE USARÁ EN EL TEMPORIZADOR
+        Log.e("TIMER_CRITICAL", "🔥🔥🔥 TEMPORIZADOR USARÁ: " + configuredDuration + " segundos 🔥🔥🔥");
+        if (configuredDuration == 60) {
+            Log.e("TIMER_CRITICAL", "❌❌❌ ERROR: USANDO 60 SEGUNDOS EN LUGAR DE 10 ❌❌❌");
+        }
+        
+        // Mostrar progreso SIN referencias a "Serie"
         TextView textProgress = findViewById(R.id.textProgress);
         String progreso = String.format(
-                "Ejercicio %d/%d, Set %d/%d, Rep %d/%d",
+                "Ejercicio %d/%d, Rep %d/%d",
                 exerciseIndex + 1,
                 template.getExercises().size(),
-                setIndex + 1,
-                template.getExercises().get(exerciseIndex).getSets(),
                 repIndex + 1,
-                template.getExercises().get(exerciseIndex).getRepetitions()
+                configuredReps
         );
         textProgress.setText(progreso);
 
-        // Actualiza los textos, progresos, etc.
-        textTimerCenter.setText(String.valueOf(currentExercise.getDuration()));
-        progressBar.setMax(currentExercise.getDuration());
-        progressBar.setProgress(currentExercise.getDuration());
+        // Asegurar que estamos usando exactamente la duración configurada
+        final int totalSeconds = configuredDuration;
+        progressBar.setMax(totalSeconds);
+        progressBar.setProgress(totalSeconds);
 
-        // Inicia el temporizador para el ejercicio actual
-        startExerciseCountdown(currentExercise.getDuration() * 1000L, btnNext, true);
-        Log.d("DEPURACION", "[updateExerciseDisplayCore][DESPUES] ejercicioIndex=" + exerciseIndex + ", setIndex=" + setIndex + ", repIndex=" + repIndex);
-        if (template != null && template.getExercises() != null && exerciseIndex < template.getExercises().size()) {
-            WorkoutTemplateExercise_v2 currentExercise2 = template.getExercises().get(exerciseIndex);
-            Log.d("DEPURACION", "[updateExerciseDisplayCore][DESPUES] sets=" + currentExercise2.getSets() + ", reps=" + currentExercise2.getRepetitions());
+        // Mostrar el valor inicial exacto antes de iniciar el temporizador
+        textTimerCenter.setText(String.valueOf(totalSeconds));
+        
+        // Guardar el tiempo de inicio para cálculos precisos
+        final long startTimeMillis = totalSeconds * 1000L;
+        millisLeft = startTimeMillis; // Inicializar el tiempo restante
+        
+        Log.d("REP", "[startExerciseCountdown] Iniciando temporizador con: " + startTimeMillis + " ms (" + totalSeconds + " segundos)");
+        // CRÍTICO: Cancelar temporizador anterior para evitar números superpuestos
+        if (exerciseTimer != null) {
+            exerciseTimer.cancel();
+            exerciseTimer = null;
+            Log.d("TIMER_DEBUG", "[updateExerciseDisplayCore] Temporizador anterior cancelado");
         }
+        
+        exerciseTimer = new CountDownTimer(startTimeMillis, 50) {  // Actualizar cada 50ms para animación suave
+            @Override
+            public void onTick(long millisUntilFinished) {
+                // Actualizar el tiempo restante directamente sin compensación
+                millisLeft = millisUntilFinished;
+                int seconds = (int) (millisLeft / 1000);
+                
+                // Para una animación más suave, podemos calcular el progreso con precisión de milisegundos
+                float progress = (float)millisLeft / (float)startTimeMillis * totalSeconds;
+                
+                textTimerCenter.setText(String.valueOf(seconds));
+                progressBar.setProgress(seconds);
+            }
+
+            @Override
+            public void onFinish() {
+                Log.d("REP", "[onFinish] Temporizador FINALIZADO - Duración original: " + (startTimeMillis/1000) + " segundos");
+                textTimerCenter.setText("0");
+                progressBar.setProgress(0);
+                if (btnNext != null) btnNext.setEnabled(true);
+
+                Log.d("SONIDO", "Finalizó temporizador automático - llamando a avanzarAutomatico()");
+                // Llamar a avance automático que maneja repeticiones
+                avanzarAutomatico();
+            }
+        };
+        if (!isPaused) exerciseTimer.start();
     }
 
     // Pausa y reanuda
@@ -901,24 +983,51 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
 
     // Inicia o reanuda el temporizador del ejercicio
     private void startExerciseCountdown(long millis, Button btnNext, boolean avanzarAlFinal) {
-        millisLeft = millis;
-        exerciseTimer = new CountDownTimer(millis, 1000) {
+        // Si hay un temporizador anterior, lo cancelamos primero
+        if (exerciseTimer != null) {
+            exerciseTimer.cancel();
+            exerciseTimer = null;
+        }
+
+        progressBar.setVisibility(View.VISIBLE);
+        
+        // Asegurar que estamos usando exactamente la duración configurada
+        final int totalSeconds = (int) (millis / 1000);
+        progressBar.setMax(totalSeconds);
+        progressBar.setProgress(totalSeconds);
+
+        // Mostrar el valor inicial exacto antes de iniciar el temporizador
+        textTimerCenter.setText(String.valueOf(totalSeconds));
+        
+        // Guardar el tiempo de inicio para cálculos precisos
+        final long startTimeMillis = millis;
+        millisLeft = millis; // Inicializar el tiempo restante
+        
+        Log.d("REP", "[startExerciseCountdown] Iniciando temporizador con: " + millis + " ms (" + totalSeconds + " segundos)");
+        exerciseTimer = new CountDownTimer(millis, 50) {  // Actualizar cada 50ms para animación suave
             @Override
             public void onTick(long millisUntilFinished) {
+                // Actualizar el tiempo restante directamente sin compensación
                 millisLeft = millisUntilFinished;
-                textTimerCenter.setText(String.valueOf(millisUntilFinished / 1000));
-                progressBar.setProgress((int) (millisUntilFinished / 1000));
+                int seconds = (int) (millisLeft / 1000);
+                
+                // Para una animación más suave, podemos calcular el progreso con precisión de milisegundos
+                float progress = (float)millisLeft / (float)startTimeMillis * totalSeconds;
+                
+                textTimerCenter.setText(String.valueOf(seconds));
+                progressBar.setProgress(seconds);
             }
 
             @Override
             public void onFinish() {
+                Log.d("REP", "[onFinish] Temporizador FINALIZADO - Duración original: " + (millis/1000) + " segundos");
                 textTimerCenter.setText("0");
                 progressBar.setProgress(0);
                 if (btnNext != null) btnNext.setEnabled(true);
 
-                Log.d("SONIDO", "Finalizó temporizador automático - CON SONIDO");
-                // Usamos el método específico para eventos automáticos que SÍ reproduce sonidos
-                if (avanzarAlFinal) avanzarAutomaticoConSonido();
+                Log.d("SONIDO", "Finalizó temporizador automático - llamando a avanzarAutomatico()");
+                // Llamar a avance automático que maneja repeticiones
+                if (avanzarAlFinal) avanzarAutomatico();
             }
         };
         if (!isPaused) exerciseTimer.start();
@@ -958,13 +1067,13 @@ public class WorkoutPlayerActivity_v2 extends AppCompatActivity {
         try {
             if (template != null && template.getExercises() != null && exerciseIndex < template.getExercises().size()) {
                 Log.d("EvolvDebug", "[PAUSE] WorkoutPlayer.saveCurrentProgress(): exerciseIndex=" + exerciseIndex +
-                        ", setIndex=" + setIndex + ", repIndex=" + repIndex + ", userId=" + template.getUserId() +
+                        ", repIndex=" + repIndex + ", userId=" + template.getUserId() +
                         ", templateId=" + template.getTemplateId());
 
                 // Guardar el progreso
                 com.example.evolv.utils.SessionProgressManager_v2.saveProgress(
                         this, template.getUserId(), template.getTemplateId(),
-                        exerciseIndex, setIndex, repIndex);
+                        exerciseIndex, 0, repIndex);
 
                 // Marcar la plantilla como pausada (en memoria y en SharedPreferences)
                 template.setPaused(true);

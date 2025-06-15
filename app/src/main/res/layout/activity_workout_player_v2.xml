@@ -10,14 +10,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-    <TextView
-        android:id="@+id/textIntroTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="8dp"
-        android:text="Nombre de plantilla"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
 
     <TextView
         android:id="@+id/textIntroExerciseName"
@@ -26,7 +19,7 @@
         android:layout_gravity="center_horizontal"
         android:paddingBottom="8dp"
         android:text="Ejercicio actual"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <ImageView
         android:id="@+id/imageExercise"

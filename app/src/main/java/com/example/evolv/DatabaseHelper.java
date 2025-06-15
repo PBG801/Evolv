@@ -328,15 +328,28 @@ public class DatabaseHelper extends SQLiteOpenHelper implements AutoCloseable {
      * @return WorkoutTemplate_v2 si existe, null si no se encuentra
      */
     public WorkoutTemplate_v2 getWorkoutTemplateByNameAndUserId(String name, long userId) {
-        android.util.Log.d("SAVE", "[DatabaseHelper] Buscando entrenamiento con nombre=\"" + name + "\" para userId=" + userId);
+        android.util.Log.d("SAVE", "[DatabaseHelper][getWorkoutTemplateByNameAndUserId] INICIO: Buscando entrenamiento con nombre=\"" + name + "\" para userId=" + userId);
         SQLiteDatabase db = this.getReadableDatabase();
         
-        Cursor cursor = db.rawQuery(
-            "SELECT template_id, name, workout_type, notes, user_id FROM " + 
-            TABLE_WORKOUT_TEMPLATE + 
-            " WHERE " + COL_TEMPLATE_NAME + " = ? AND " +
-            COL_USER_ID + " = ? LIMIT 1",
-            new String[]{name, String.valueOf(userId)});
+        // Verificar si se está usando la tabla correcta y columnas correctas
+        android.util.Log.d("DEBUG_QUERY", "[DatabaseHelper] Tabla: " + TABLE_WORKOUT_TEMPLATE + 
+                          ", Col nombre: " + COL_TEMPLATE_NAME + 
+                          ", Col userId: " + COL_USER_ID);
+                          
+        String sqlQuery = "SELECT template_id, name, workout_type, notes, user_id FROM " + 
+                         TABLE_WORKOUT_TEMPLATE + 
+                         " WHERE " + COL_TEMPLATE_NAME + " = ? AND " +
+                         COL_USER_ID + " = ? LIMIT 1";
+                         
+        android.util.Log.d("DEBUG_QUERY", "[DatabaseHelper] SQL Query: " + sqlQuery.replace("?", "'?'"));
+        android.util.Log.d("DEBUG_QUERY", "[DatabaseHelper] Parámetros: [" + name + ", " + String.valueOf(userId) + "]");
+        
+        Cursor cursor = db.rawQuery(sqlQuery, new String[]{name, String.valueOf(userId)});
+        
+        // Log de diagnóstico del cursor
+        android.util.Log.d("DEBUG_QUERY", "[DatabaseHelper] Cursor nulo?: " + (cursor == null));
+        android.util.Log.d("DEBUG_QUERY", "[DatabaseHelper] Cursor vacío?: " + (cursor != null && !cursor.moveToFirst()));
+        android.util.Log.d("DEBUG_QUERY", "[DatabaseHelper] Cursor count: " + (cursor != null ? cursor.getCount() : "NULL"));
         
         WorkoutTemplate_v2 template = null;
         
@@ -702,15 +715,23 @@ private void copyDatabaseIfNeeded() throws IOException {
                 String desc = cursor.getString(cursor.getColumnIndexOrThrow(COL_DESCRIPTION_TEXT));
                 String createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COL_CREATED_AT_EXERCISE));
                 
+                Log.d("TIEMPO_EJERCICIO", "[getExercisesForTemplate] Ejercicio '" + name + "' (ID: " + exerciseId + ")" +
+                       " - Valor original en DB: targetDuration=" + targetDuration + ", restPeriod=" + restPeriod);
+                
                 // Normalizar valores según los nuevos estándares predeterminados
                 // Sets: mínimo 1
                 // Repeticiones: valor predeterminado 3
-                // TargetDuration: valor predeterminado 10 segundos
-                // RestPeriod: valor predeterminado 10 segundos
+                // TargetDuration: valor predeterminado 10 segundos (límite máximo 30 segundos)
+                // RestPeriod: valor predeterminado 10 segundos (límite máximo 30 segundos)
                 int normalizedSets = Math.max(1, sets);
                 int normalizedRepetitions = (repetitions <= 0 || repetitions > 30) ? 3 : repetitions;
                 int normalizedDuration = (targetDuration <= 0 || targetDuration > 30) ? 10 : targetDuration;
                 int normalizedRestPeriod = (restPeriod <= 0 || restPeriod > 30) ? 10 : restPeriod;
+                
+                Log.d("TIEMPO_EJERCICIO", "[getExercisesForTemplate] Normalización: " +
+                        "targetDuration [" + targetDuration + " -> " + normalizedDuration + "]" +
+                        (targetDuration > 30 ? " (EXCEDIÓ LÍMITE DE 30s)" : "") +
+                        ", restPeriod [" + restPeriod + " -> " + normalizedRestPeriod + "]");
                 
                 // Registrar normalización si hubo cambios
                 if (sets != normalizedSets || repetitions != normalizedRepetitions ||
@@ -720,6 +741,11 @@ private void copyDatabaseIfNeeded() throws IOException {
                             "reps: " + repetitions + "→" + normalizedRepetitions + ", " +
                             "duration: " + targetDuration + "→" + normalizedDuration + ", " +
                             "rest: " + restPeriod + "→" + normalizedRestPeriod);
+                    
+                    if (targetDuration > 30) {
+                        Log.w("TIEMPO_EJERCICIO", "[getExercisesForTemplate] ADVERTENCIA: El ejercicio '" + name + "' tenía configurado " + 
+                                targetDuration + " segundos que excede el límite de 30s y fue normalizado a " + normalizedDuration + "s");
+                    }
                 }
                 
                 // Crear el objeto Exercise

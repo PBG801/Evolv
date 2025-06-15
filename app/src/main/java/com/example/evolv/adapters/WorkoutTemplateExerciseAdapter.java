@@ -137,7 +137,7 @@ public class WorkoutTemplateExerciseAdapter extends RecyclerView.Adapter<Workout
                 if (pos > 0) {
                     com.example.evolv.models.Exercise selected = disponibles.get(pos - 1);
                     com.example.evolv.models.WorkoutTemplateExercise_v2 nuevo = new com.example.evolv.models.WorkoutTemplateExercise_v2(
-                        selected.getExercise_id(), selected.getName(), 1, 10, 60, selectedExercises.size() + 1, "", "");
+                        selected.getExercise_id(), selected.getName(), 1, 10, 10, selectedExercises.size() + 1, "", "");
                     selectedExercises.add(nuevo);
                     notifyItemInserted(selectedExercises.size() - 1);
                     notifyItemChanged(selectedExercises.size());
@@ -236,7 +236,7 @@ public class WorkoutTemplateExerciseAdapter extends RecyclerView.Adapter<Workout
         selectedExercise.getName(),
         1,   // sets por defecto
         10,  // reps por defecto
-        30,  // targetDuration por defecto (30 segundos)
+        10,  // targetDuration por defecto (10 segundos)
         60,  // restPeriod por defecto
         "time", // durationType por defecto
         selectedExercise.getImg_url(), // imagen
